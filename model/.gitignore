@@ -1,0 +1,5 @@
+frames
+inference_graph
+resnet_model
+ssd_resnet50_v1_fpn_640x640_coco17_tpu-8
+*.record
