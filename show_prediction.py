@@ -2,6 +2,11 @@ import numpy as np
 import cv2
 import json
 import os
+import sys
+
+if len(sys.argv)!=2:
+    print(f'USAGE: {sys.argv[0]} <path_to_video>')
+    exit()
 
 import tensorflow as tf
 
@@ -10,7 +15,7 @@ from object_detection.utils import config_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
-treshold = 0.8
+treshold = 0.6
 
 
 def get_keypoint_tuples(eval_config):
@@ -46,8 +51,8 @@ def get_model_detection_function(model):
 
 
 if __name__ == '__main__':
-    pipeline_config = 'inference_graph/pipeline.config'
-    model_dir = 'inference_graph/checkpoint'
+    pipeline_config = 'model/inference_graph/pipeline.config'
+    model_dir = 'model/inference_graph/checkpoint'
 
     configs = config_util.get_configs_from_pipeline_file(pipeline_config)
     model_config = configs['model']
@@ -60,18 +65,19 @@ if __name__ == '__main__':
 
     detect_fn = get_model_detection_function(detection_model)
 
-    cap = cv2.VideoCapture(
-        'PigTrackingDataset2020/videos/01_early_finisher_high_activity_day.mp4')
+    cap = cv2.VideoCapture(sys.argv[1])
 
     i = 0
+    import matplotlib.pyplot as plt
     while(cap.isOpened()):
         ret, frame = cap.read()
         i += 1
 
         frame = frame.astype('uint8')
 
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         input_tensor = tf.convert_to_tensor(
-            np.expand_dims(frame, 0), dtype=tf.float32)
+            np.expand_dims(rgb_frame, 0), dtype=tf.float32)
         detections, predictions_dict, shapes = detect_fn(input_tensor)
 
         boxes = detections['detection_boxes'][0]

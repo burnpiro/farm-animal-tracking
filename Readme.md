@@ -19,11 +19,11 @@ $ tar zxvf inference_graph.tar.gz -C model
 
 To visualize animal detection on video use:
 ```
-$ python run_detection.py
+$ python show_prediction
 ```
 or for image:
 ```
-$ python show_prediction
+$ python run_detection.py
 ```
 
 ![](prediction.png)

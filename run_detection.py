@@ -1,12 +1,13 @@
-import matplotlib
 import matplotlib.pyplot as plt
 import os
 
-import io
-import scipy.misc
 import numpy as np
-from six import BytesIO
-from PIL import Image, ImageDraw, ImageFont
+
+import sys
+
+if len(sys.argv)!=2:
+    print(f'USAGE: {sys.argv[0]} <path_to_image>')
+    exit()
 
 import tensorflow as tf
 
@@ -16,7 +17,6 @@ from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
 from imageio import imread
-
 
 def get_keypoint_tuples(eval_config):
     """Return a tuple list of keypoint edges from the eval config.
@@ -34,8 +34,8 @@ def get_keypoint_tuples(eval_config):
     return tuple_list
 
 
-pipeline_config = 'inference_graph/pipeline.config'
-model_dir = 'inference_graph/checkpoint'
+pipeline_config = 'model/inference_graph/pipeline.config'
+model_dir = 'model/inference_graph/checkpoint'
 
 configs = config_util.get_configs_from_pipeline_file(pipeline_config)
 model_config = configs['model']
@@ -66,7 +66,7 @@ def get_model_detection_function(model):
 detect_fn = get_model_detection_function(detection_model)
 
 
-image_np = imread('frames/01/frame8910.jpg').astype('uint8')
+image_np = imread(sys.argv[1]).astype('uint8')
 input_tensor = tf.convert_to_tensor(
     np.expand_dims(image_np, 0), dtype=tf.float32)
 detections, predictions_dict, shapes = detect_fn(input_tensor)
@@ -79,11 +79,8 @@ if 'detection_keypoints' in detections:
     keypoints = detections['detection_keypoints'][0].numpy()
     keypoint_scores = detections['detection_keypoint_scores'][0].numpy()
 
-print('detections', detections)
-print('predictions_dict', predictions_dict)
-print('shapes', shapes)
 
-label_map_path = configs['eval_input_config'].label_map_path
+label_map_path = os.path.join("model/", configs['eval_input_config'].label_map_path)
 label_map = label_map_util.load_labelmap(label_map_path)
 categories = label_map_util.convert_label_map_to_categories(
     label_map,
