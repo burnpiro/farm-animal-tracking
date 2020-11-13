@@ -9,11 +9,16 @@ if len(sys.argv)!=2:
     exit()
 
 import tensorflow as tf
+gpu = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpu[0], True)
+tf.config.set_visible_devices([], 'GPU')
 
 from object_detection.utils import label_map_util
 from object_detection.utils import config_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
+
+import time
 
 treshold = 0.6
 
@@ -65,11 +70,25 @@ if __name__ == '__main__':
 
     detect_fn = get_model_detection_function(detection_model)
 
+    label_map_path = os.path.join("model/", configs['eval_input_config'].label_map_path)
+    label_map = label_map_util.load_labelmap(label_map_path)
+    categories = label_map_util.convert_label_map_to_categories(
+        label_map,
+        max_num_classes=label_map_util.get_max_label_map_index(label_map),
+        use_display_name=True)
+    category_index = label_map_util.create_category_index(categories)
+    label_map_dict = label_map_util.get_label_map_dict(
+        label_map, use_display_name=True)
+
     cap = cv2.VideoCapture(sys.argv[1])
 
     i = 0
+    frame_start = 0
     import matplotlib.pyplot as plt
     while(cap.isOpened()):
+        frame_end = time.time()
+        print(f'fps: {1/(frame_end-frame_start)}')
+        frame_start = time.time()
         ret, frame = cap.read()
         i += 1
 
@@ -78,6 +97,8 @@ if __name__ == '__main__':
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         input_tensor = tf.convert_to_tensor(
             np.expand_dims(rgb_frame, 0), dtype=tf.float32)
+
+
         detections, predictions_dict, shapes = detect_fn(input_tensor)
 
         boxes = detections['detection_boxes'][0]
@@ -85,12 +106,26 @@ if __name__ == '__main__':
 
         resized = cv2.resize(frame, (800, 600))
 
-        j = 0
-        while scores[j] > treshold:
-            j += 1
-            box = boxes[j]
-            cv2.rectangle(resized, (int(box[1]*800), int(box[0]*600)),
-                          (int(box[3]*800), int(box[2]*600)), (255, 0, 255), 2)
+        viz_utils.visualize_boxes_and_labels_on_image_array(
+            resized,
+            detections['detection_boxes'][0].numpy(),
+            (detections['detection_classes'][0].numpy() + 1).astype(int),
+            detections['detection_scores'][0].numpy(),
+            category_index,
+            use_normalized_coordinates=True,
+            max_boxes_to_draw=200,
+            min_score_thresh=.30,
+            agnostic_mode=False,
+            keypoints=None,
+            keypoint_scores=None,
+            keypoint_edges=get_keypoint_tuples(configs['eval_config']))
+
+        # j = 0
+        # while scores[j] > treshold:
+        #     j += 1
+        #     box = boxes[j]
+        #     cv2.rectangle(resized, (int(box[1]*800), int(box[0]*600)),
+        #                   (int(box[3]*800), int(box[2]*600)), (255, 0, 255), 2)
 
         cv2.imshow('frame', resized)
         if cv2.waitKey(1) & 0xFF == ord('q'):
