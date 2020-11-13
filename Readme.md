@@ -13,7 +13,7 @@ Dataset for learning of model can be obtained at [PSRG website](psrg.unl.edu/Pro
 1. Run:
 
 ```
-$ unzip zxvf inference_graph.tar.zip -d model
+$ unzip inference_graph.tar.zip -d model
 ```
 
 ## Detection
