@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import json
 import os
-import multiprocessing
+from multiprocessing import Pool
 
 from PIL import Image, ImageDraw
 from scipy.io import loadmat
@@ -23,13 +23,21 @@ def annotate(filename):
     index = int(os.path.basename(filename)[:2])-1
     mat = loadmat(mat_file)['LocationSelected'][0][index]
 
-    os.mkdir(f'frames/{index+1:02d}')
+    if not os.path.isdir(f'frames/{index+1:02d}'):
+        os.mkdir(f'frames/{index+1:02d}')
 
     i = 0
     annotations = {}
+    frames_missing = 0
 
     while(cap.isOpened()):
         ret, frame = cap.read()
+        if frame is None:
+            frames_missing += 1
+            if frames_missing > 5:
+                break
+            else:
+                continue
 
         if i >= mat.shape[1]:
             break
@@ -68,18 +76,17 @@ def annotate(filename):
 
     cap.release()
 
-
 if __name__ == '__main__':
     processes = []
-    os.mkdir('frames')
+    numberOfThreads = 1
+    if not os.path.isdir(f'frames'):
+        os.mkdir('frames')
+    pool = Pool(processes=4)
+    entires = []
     for entry in os.listdir(videos_dir):
         if entry.endswith('.mp4'):
-            p = multiprocessing.Process(target=annotate, args=(
-                os.path.join(videos_dir, entry),))
-            p.start()
-            processes.append(p)
-            
-    for p in processes:
-        p.join()
+            print(f'processing {os.path.join(videos_dir, entry)}')
+            entires.append(os.path.join(videos_dir, entry))
+    pool.map(annotate, entires)
         
     cv2.destroyAllWindows()
