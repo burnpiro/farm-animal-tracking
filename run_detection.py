@@ -10,13 +10,19 @@ if len(sys.argv)!=2:
     exit()
 
 import tensorflow as tf
+from PIL import Image
 
 from object_detection.utils import label_map_util
 from object_detection.utils import config_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
+from helpers.bb_helper import get_bb
+
 from imageio import imread
+
+if not os.path.isdir(f'crop_images'):
+    os.mkdir(f'crop_images')
 
 def get_keypoint_tuples(eval_config):
     """Return a tuple list of keypoint edges from the eval config.
@@ -98,11 +104,38 @@ viz_utils.visualize_boxes_and_labels_on_image_array(
     category_index,
     use_normalized_coordinates=True,
     max_boxes_to_draw=200,
-    min_score_thresh=.30,
+    min_score_thresh=.50,
     agnostic_mode=False,
     keypoints=keypoints,
     keypoint_scores=keypoint_scores,
     keypoint_edges=get_keypoint_tuples(configs['eval_config']))
+
+boxes = get_bb(
+    image_np_with_detections,
+    detections['detection_boxes'][0].numpy(),
+    (detections['detection_classes'][0].numpy() + label_id_offset).astype(int),
+    detections['detection_scores'][0].numpy(),
+    category_index,
+    use_normalized_coordinates=True,
+    max_boxes_to_draw=200,
+    min_score_thresh=.50,
+    agnostic_mode=False,
+    keypoints=keypoints,
+    keypoint_scores=keypoint_scores,
+    keypoint_edges=get_keypoint_tuples(configs['eval_config']))
+
+for idx, (box, _) in enumerate(boxes.items()):
+    ymin, xmin, ymax, xmax = box
+    bb_image = tf.image.crop_to_bounding_box(
+        input_tensor[0],
+        int(ymin*input_tensor[0].shape[0]),
+        int(xmin*input_tensor[0].shape[1]),
+        int((ymax - ymin)*input_tensor[0].shape[0]),
+        int((xmax - xmin)*input_tensor[0].shape[1])
+    )
+    image = Image.fromarray(tf.cast(bb_image, tf.uint8).numpy())
+    image.save(f"crop_images/{idx}.jpg")
+
 
 plt.figure(figsize=(12, 16))
 plt.imshow(image_np_with_detections)
