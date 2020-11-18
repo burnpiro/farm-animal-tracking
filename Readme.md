@@ -28,3 +28,16 @@ $ python run_detection.py
 ```
 
 ![](prediction.png)
+
+## Siamese network run
+
+```
+$ python test_siamese.py
+```
+
+Options:
+```
+--source ./crop_images/5.jpg
+--target ./crop_images/1.jpg
+--weights siam-model-12.h5 # not available yet
+```
