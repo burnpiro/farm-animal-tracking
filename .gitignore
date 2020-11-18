@@ -1,3 +1,7 @@
 .vscode
 PigTrackingDataset2020
 PigTrackingDataset2019
+/.idea/
+/model/object_detection/
+/model/checkpoint/
+/model/saved_model/
