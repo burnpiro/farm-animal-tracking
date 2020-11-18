@@ -2,3 +2,4 @@ imageio
 tensorflow
 opencv-python
 pillow
+easydict
