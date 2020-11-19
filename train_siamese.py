@@ -1,66 +1,59 @@
-import tensorflow as tf
 from datetime import datetime
-from siamese.model import create_model
+
+import tensorflow as tf
+import tensorflow_addons as tfa
+from absl import app
+
+from data.data_generator import DataGenerator
 from siamese.config import cfg
-import numpy as np
+from siamese.model import create_model
 
 TRAINABLE = False
 
 target = './crop_images/1.jpg'
 source = './crop_images/5.jpg'
 
+WEIGHTS = './siam-model-0.55.h5'
 
-def main():
+
+def main(_argv):
     model = create_model(trainable=TRAINABLE)
 
-    # if TRAINABLE:
-    #     model.load_weights(WEIGHTS)
+    if TRAINABLE:
+        model.load_weights(WEIGHTS)
+
+    ds_generator = DataGenerator()
+
+    # train_ds = ds_generator.get_dataset()
 
     learning_rate = cfg.TRAIN.LEARNING_RATE
-    if TRAINABLE:
-        learning_rate /= 10
 
-    optimizer = tf.keras.optimizers.SGD(lr=learning_rate, decay=cfg.TRAIN.LR_DECAY, momentum=0.9, nesterov=False)
-    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=[])
+    # optimizer = tf.keras.optimizers.RMSprop(lr=learning_rate)
+    optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
+    loss_fun = tfa.losses.TripletSemiHardLoss()
+    model.compile(loss=loss_fun, optimizer=optimizer, metrics=[])
 
-    checkpoint = tf.keras.callbacks.ModelCheckpoint("siam-model-{val_iou:.2f}.h5", monitor="val_iou", verbose=1,
+    checkpoint = tf.keras.callbacks.ModelCheckpoint("siam-model-{loss:.4f}.h5", monitor="loss", verbose=1,
                                                     save_best_only=True,
-                                                    save_weights_only=True, mode="max")
-    stop = tf.keras.callbacks.EarlyStopping(monitor="val_iou", patience=cfg.TRAIN.PATIENCE, mode="max")
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_iou", factor=0.6, patience=5, min_lr=1e-6, verbose=1,
-                                                     mode="max")
+                                                    save_weights_only=True, mode="min")
+    # stop = tf.keras.callbacks.EarlyStopping(monitor="loss", patience=cfg.TRAIN.PATIENCE, mode="min")
+    # reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor="loss", factor=0.6, patience=5, min_lr=1e-6, verbose=1,
+    #                                                  mode="min")
 
     # Define the Keras TensorBoard callback.
-    logdir="logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    logdir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
-    source_image = tf.keras.preprocessing.image.load_img(target,
-                                                       target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE))
+    tf.keras.utils.plot_model(model, to_file="model_fig.png", show_shapes=True, expand_nested=True)
 
-    source_image = tf.keras.preprocessing.image.img_to_array(source_image)
-    source_image = np.expand_dims(source_image, axis=0)
-    source_image - tf.keras.applications.mobilenet_v2.preprocess_input(source_image)
-
-    target_image = tf.keras.preprocessing.image.load_img(target,
-                                                       target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE))
-
-    target_image = tf.keras.preprocessing.image.img_to_array(target_image)
-    target_image = np.expand_dims(target_image, axis=0)
-    target_image - tf.keras.applications.mobilenet_v2.preprocess_input(target_image)
-
-    print(source_image.shape)
-    print(target_image.shape)
-    print(model.predict([source_image, target_image]))
-
-    print(model.summary())
+    model.fit_generator(ds_generator,
+                        epochs=cfg.TRAIN.EPOCHS,
+                        callbacks=[tensorboard_callback, checkpoint],
+                        verbose=1)
 
 
-    # model.fit_generator(generator=train_datagen,
-    #                     epochs=cfg.TRAIN.EPOCHS,
-    #                     callbacks=[tensorboard_callback, checkpoint, reduce_lr, stop],
-    #                     shuffle=True,
-    #                     verbose=1)
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    try:
+        app.run(main)
+    except SystemExit:
+        pass
