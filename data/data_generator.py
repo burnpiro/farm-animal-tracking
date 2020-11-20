@@ -40,7 +40,7 @@ AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, folder_path="./data/cropped_animals", file_ext="jpg", debug=False, training=True):
+    def __init__(self, folder_path=cfg.TRAIN.DATA_PATH, file_ext="jpg", debug=False, training=True):
         """
         Args:
             folder_path: string ## Path to folder with video frames
@@ -93,10 +93,11 @@ class DataGenerator(tf.keras.utils.Sequence):
         return math.ceil(len(self.images) / cfg.TRAIN.BATCH_SIZE)
 
     @staticmethod
-    def process_image(image_path):
+    def process_image(image_path, to_input=False):
         """
         Args:
             image_path: string
+            to_input: boolean - should image be wrapped into input shape (1, 224, 224, 3)
 
         Returns:
             ((cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE, 3), class)
@@ -107,6 +108,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         image = np.expand_dims(image, axis=0)
         image - tf.keras.applications.mobilenet_v2.preprocess_input(image)
 
+        if to_input:
+            return image
         return image[0]
 
     @staticmethod

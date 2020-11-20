@@ -13,7 +13,7 @@ TRAINABLE = False
 target = './crop_images/1.jpg'
 source = './crop_images/5.jpg'
 
-WEIGHTS = './siam-model-0.55.h5'
+WEIGHTS = f'{cfg.MODEL.WEIGHTS_PATH}siam-model-0.00.h5'
 
 
 def main(_argv):
@@ -33,7 +33,7 @@ def main(_argv):
     loss_fun = tfa.losses.TripletSemiHardLoss()
     model.compile(loss=loss_fun, optimizer=optimizer, metrics=[])
 
-    checkpoint = tf.keras.callbacks.ModelCheckpoint("siam-model-{loss:.4f}.h5", monitor="loss", verbose=1,
+    checkpoint = tf.keras.callbacks.ModelCheckpoint(cfg.MODEL.WEIGHTS_PATH+"siam-model-{loss:.4f}.h5", monitor="loss", verbose=1,
                                                     save_best_only=True,
                                                     save_weights_only=True, mode="min")
     # stop = tf.keras.callbacks.EarlyStopping(monitor="loss", patience=cfg.TRAIN.PATIENCE, mode="min")
