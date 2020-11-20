@@ -52,6 +52,8 @@ This is going to produce two files:
 
 You can visualize those embeddings in [https://projector.tensorflow.org/](https://projector.tensorflow.org/) application. Just upload them as a custom data (use `Load` option).
 
+![](emb-space.png)
+
 ### Testing two images
 
 You can specify the weights for the model. Please use weights marked with the lowest number (loss value).
@@ -64,6 +66,6 @@ Options:
 ```
 --source ./crop_images/5.jpg
 --target ./crop_images/1.jpg
---weights siam-model-0.0023.h5
+--weights siam-model-0.0012.h5
 ```
 

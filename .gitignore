@@ -5,3 +5,4 @@ PigTrackingDataset2019
 /model/object_detection/
 /model/checkpoint/
 /model/saved_model/
+/data/cropped_animals/

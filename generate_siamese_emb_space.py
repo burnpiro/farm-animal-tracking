@@ -8,7 +8,7 @@ from absl.flags import FLAGS
 from data.data_generator import DataGenerator
 from siamese.model import create_model
 
-flags.DEFINE_string('weights', './siam-model-0.0023.h5',
+flags.DEFINE_string('weights', './siam-model-0.0012.h5',
                     'path to weights file')
 flags.DEFINE_string('target', './crop_images/5.jpg', 'path to input image')
 flags.DEFINE_string('source', './crop_images/1.jpg', 'path to input image')

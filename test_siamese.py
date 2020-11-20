@@ -7,7 +7,7 @@ from absl.flags import FLAGS
 from data.data_generator import DataGenerator
 from siamese.model import create_model
 
-flags.DEFINE_string('weights', './siam-model-0.0023.h5',
+flags.DEFINE_string('weights', './siam-model-0.0012.h5',
                     'path to weights file')
 flags.DEFINE_string('target', './crop_images/5.jpg', 'path to input image')
 flags.DEFINE_string('source', './crop_images/1.jpg', 'path to input image')
@@ -18,8 +18,8 @@ def main(_argv):
 
     model.load_weights(FLAGS.weights)
 
-    source_image = DataGenerator.process_image(FLAGS.source)
-    target_image = DataGenerator.process_image(FLAGS.target)
+    source_image = DataGenerator.process_image(FLAGS.source, to_input=True)
+    target_image = DataGenerator.process_image(FLAGS.target, to_input=True)
 
     t1 = time.time()
     pred = model.predict(source_image)
