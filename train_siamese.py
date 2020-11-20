@@ -7,6 +7,7 @@ from absl import app
 from data.data_generator import DataGenerator
 from siamese.config import cfg
 from siamese.model import create_model
+import os
 
 TRAINABLE = False
 
@@ -14,6 +15,7 @@ target = './crop_images/1.jpg'
 source = './crop_images/5.jpg'
 
 WEIGHTS = './siam-model-0.55.h5'
+WEIGHTS_DIR = 'weights'
 
 
 def main(_argv):
@@ -23,6 +25,7 @@ def main(_argv):
         model.load_weights(WEIGHTS)
 
     ds_generator = DataGenerator()
+    test_data = DataGenerator(training=False)
 
     # train_ds = ds_generator.get_dataset()
 
@@ -33,7 +36,7 @@ def main(_argv):
     loss_fun = tfa.losses.TripletSemiHardLoss()
     model.compile(loss=loss_fun, optimizer=optimizer, metrics=[])
 
-    checkpoint = tf.keras.callbacks.ModelCheckpoint("siam-model-{loss:.4f}.h5", monitor="loss", verbose=1,
+    checkpoint = tf.keras.callbacks.ModelCheckpoint(WEIGHTS_DIR+"/siam-model-{epoch}_{loss:.4f}_{val_loss:.4f}.h5", monitor="loss", verbose=1,
                                                     save_best_only=True,
                                                     save_weights_only=True, mode="min")
     # stop = tf.keras.callbacks.EarlyStopping(monitor="loss", patience=cfg.TRAIN.PATIENCE, mode="min")
@@ -44,12 +47,17 @@ def main(_argv):
     logdir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
-    tf.keras.utils.plot_model(model, to_file="model_fig.png", show_shapes=True, expand_nested=True)
+    try:
+        tf.keras.utils.plot_model(
+            model, to_file="model_fig.png", show_shapes=True, expand_nested=True)
+    except ImportError as e:
+        print(f'Failed to plot keras model: {e}')
 
-    model.fit_generator(ds_generator,
-                        epochs=cfg.TRAIN.EPOCHS,
-                        callbacks=[tensorboard_callback, checkpoint],
-                        verbose=1)
+    model.fit(ds_generator,
+              epochs=cfg.TRAIN.EPOCHS,
+              callbacks=[tensorboard_callback, checkpoint],
+              verbose=1,
+              validation_data=test_data)
 
 
 if __name__ == '__main__':
