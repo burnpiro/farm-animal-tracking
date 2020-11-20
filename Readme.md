@@ -29,15 +29,41 @@ $ python run_detection.py
 
 ![](prediction.png)
 
-## Siamese network run
+## Siamese network
+
+#### Training
+
+Make sure you have cropped dataset in `./data/cropped_animals` folder. Please check `./data/data_generator.py` documentation for more info.
 
 ```
-$ python test_siamese.py
+$ python train_siamese.py
+```
+
+#### Generate Embeddings for Test dataset an visualize it
+
+```
+$ python generate_siamese_emb_space.py
+```
+
+This is going to produce two files:
+
+- vecs.tsv - list of embeddings for test dataset
+- meta.tsv - list of labels for embeddings
+
+You can visualize those embeddings in [https://projector.tensorflow.org/](https://projector.tensorflow.org/) application. Just upload them as a custom data (use `Load` option).
+
+### Testing two images
+
+You can specify the weights for the model. Please use weights marked with the lowest number (loss value).
+
+```
+$ python test_siamese.py --source ./crop_images/5.jpg --target ./crop_images/1.jpg
 ```
 
 Options:
 ```
 --source ./crop_images/5.jpg
 --target ./crop_images/1.jpg
---weights siam-model-12.h5 # not available yet
+--weights siam-model-0.0023.h5
 ```
+
