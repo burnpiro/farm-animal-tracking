@@ -6,3 +6,4 @@ PigTrackingDataset2019
 /model/checkpoint/
 /model/saved_model/
 /data/cropped_animals/
+/siamese/weights/*.h5

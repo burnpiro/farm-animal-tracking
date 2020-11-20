@@ -139,4 +139,4 @@ for idx, (box, _) in enumerate(boxes.items()):
 
 plt.figure(figsize=(12, 16))
 plt.imshow(image_np_with_detections)
-plt.savefig('out.png')
+plt.savefig('crop_images/out.png')

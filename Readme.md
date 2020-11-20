@@ -31,6 +31,8 @@ $ python run_detection.py
 
 ## Siamese network
 
+You can download current best weights from [Firestore](https://firebasestorage.googleapis.com/v0/b/fat-farm-animal-tracking.appspot.com/o/siam-model-0.0012.h5?alt=media&token=ba006953-81f2-4c4a-bdfb-02607df12d7e). Put them into `./siamese/weights` and use the path as `--weights` parameter.
+
 #### Training
 
 Make sure you have cropped dataset in `./data/cropped_animals` folder. Please check `./data/data_generator.py` documentation for more info.
