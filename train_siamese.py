@@ -20,6 +20,7 @@ WEIGHTS_DIR = 'weights'
 
 def main(_argv):
     model = create_model(trainable=TRAINABLE)
+    model.load_weights('weights/siam-model-79_0.0665_0.6347.h5')
 
     if TRAINABLE:
         model.load_weights(WEIGHTS)
@@ -36,7 +37,7 @@ def main(_argv):
     loss_fun = tfa.losses.TripletSemiHardLoss()
     model.compile(loss=loss_fun, optimizer=optimizer, metrics=[])
 
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(WEIGHTS_DIR+"/siam-model-{epoch}_{loss:.4f}_{val_loss:.4f}.h5", monitor="loss", verbose=1,
+    checkpoint = tf.keras.callbacks.ModelCheckpoint(WEIGHTS_DIR+"/siam-model-{epoch}_{loss:.4f}_{val_loss:.4f}.h5", monitor="val_loss", verbose=1,
                                                     save_best_only=True,
                                                     save_weights_only=True, mode="min")
     # stop = tf.keras.callbacks.EarlyStopping(monitor="loss", patience=cfg.TRAIN.PATIENCE, mode="min")
