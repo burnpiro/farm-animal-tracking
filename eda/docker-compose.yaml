@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  notebooks:
+    build: .
+    ports:
+      - "8001:8888"
+    volumes:
+      - type: bind
+        source: ./notebooks
+        target: /home/jovyan/work
+      - type: bind
+        source: ../data
+        target: /home/jovyan/data/crop
+      - type: bind
+        source: ../PigTrackingDataset2019
+        target: /home/jovyan/data/2019
+      - type: bind
+        source: ../PigTrackingDataset2020
+        target: /home/jovyan/data/2020
