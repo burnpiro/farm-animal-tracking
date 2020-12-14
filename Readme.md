@@ -4,7 +4,15 @@ Project for tracking farm animals.
 
 ## Dataset
 
-Dataset for learning of model can be obtained at [PSRG website](psrg.unl.edu/Projects/Details/12-Animal-Tracking).
+Dataset for learning of model can be obtained at [PSRG website](https://psrg.unl.edu/Projects/Details/12-Animal-Tracking).
+
+## EDA (Exploratory Data Analysis)
+
+- Run:
+```shell
+docker-compose -f eda/docker-compose.yaml up
+```
+- Go to `localhost:8001` and enter token from console
 
 ## Model
 
