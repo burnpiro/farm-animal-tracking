@@ -4,7 +4,7 @@ Project for tracking farm animals.
 
 ## Dataset
 
-Dataset for learning of model can be obtained at [PSRG website](https://psrg.unl.edu/Projects/Details/12-Animal-Tracking).
+Dataset for learning of model can be obtained at [PSRG website](http://psrg.unl.edu/Projects/Details/12-Animal-Tracking).
 
 ## EDA (Exploratory Data Analysis)
 
