@@ -21,15 +21,21 @@ def create_model(trainable=False):
     for layer in base.layers:
         layer.trainable = trainable
 
-    conv = tf.keras.Model(
-        inputs=base.input,
-        outputs=tf.keras.layers.Dense(cfg.NN.DENSE_LAYER_SIZE, activation=None)(
-            tf.keras.layers.Flatten()(base.get_layer('block_10_project_BN').output))
-    )
+    # conv = tf.keras.Model(
+    #     inputs=base.input,
+    #     outputs=tf.keras.layers.Dense(2048, activation=None)(tf.keras.layers.Flatten()(base.get_layer('block_10_project_BN').output))
+    # )
+    # x = base.get_layer('block_10_project_BN').output
+    # x = base(input)
+    x = base.get_layer('block_10_project_BN').output
+    input = base.input
+    x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.Dropout(0.5)(x)
+    x = tf.keras.layers.Dense(256, activation='relu')(x)
+    # x = tf.keras.layers.Dropout(0.5)(x)
+    x = tf.keras.layers.Dense(64, activation='linear')(x)
+    x = tf.keras.layers.Lambda(lambda tensor: tf.math.l2_normalize(tensor, axis=1))(x)
 
-    encoded = conv(input_layer)
-    out = tf.keras.layers.Lambda(lambda x: tf.math.l2_normalize(x, axis=1))(encoded)
-
-    model = tf.keras.Model(inputs=input_layer, outputs=out)
+    model = tf.keras.Model(inputs=input, outputs=x)
 
     return model

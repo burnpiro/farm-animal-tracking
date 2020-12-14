@@ -60,13 +60,10 @@ class DataGenerator(tf.keras.utils.Sequence):
             for class_dir in os.scandir(video_dir.path):
                 for i, file in enumerate(glob.glob(f"{class_dir.path}/*.{file_ext}")):
                     # For train set it to "i%5 == 1"
-                    if training:
-                        if i % 5 == 1:
-                            continue
-                    else:
-                        if i % 5 != 1:
-                            continue
-
+                    isTestData = int(os.path.basename(file)[:-4])>6000
+                    if (training and isTestData) or (not training and not isTestData):
+                        continue
+                    
                     images.append((file, class_dir.name))
 
         images = pd.DataFrame(images, columns=['path', 'label'])
