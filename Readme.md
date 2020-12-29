@@ -35,7 +35,7 @@ or for image:
 $ python run_detection.py
 ```
 
-![](prediction.png)
+![](assets/prediction.png)
 
 ## Siamese network
 

@@ -8,8 +8,8 @@ from scipy.io import loadmat
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture('PigTrackingDataset2020/videos/01_early_finisher_high_activity_day.mp4')
-    mat = loadmat('PigTrackingDataset2020/LocationSelected.mat')['LocationSelected'][0][0]
+    cap = cv2.VideoCapture('../PigTrackingDataset2020/videos/01_early_finisher_high_activity_day.mp4')
+    mat = loadmat('../PigTrackingDataset2020/LocationSelected.mat')['LocationSelected'][0][0]
 
     i = 0
     while(cap.isOpened()):

@@ -50,7 +50,7 @@ def main(_argv):
 
     try:
         tf.keras.utils.plot_model(
-            model, to_file="model_fig.png", show_shapes=True, expand_nested=True)
+            model, to_file="assets/model_fig.png", show_shapes=True, expand_nested=True)
     except ImportError as e:
         print(f'Failed to plot keras model: {e}')
 
