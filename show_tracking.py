@@ -22,7 +22,7 @@ tf.config.experimental.set_memory_growth(gpu[0], True)
 tf.config.set_visible_devices([], 'GPU')
 
 
-flags.DEFINE_string('weights', './siam-model-0.0023.h5',
+flags.DEFINE_string('weights', f'{cfg.MODEL.WEIGHTS_PATH}siam-model-91_0.0518_0.5930.h5',
                     'path to weights file')
 flags.DEFINE_integer('num', '7',
                      'number of objects to track')

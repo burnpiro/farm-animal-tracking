@@ -8,3 +8,9 @@ PigTrackingDataset2019
 /data/cropped_animals/
 /siamese/weights/*.h5
 .ipynb_checkpoints
+__pycache__
+logs
+data/tracking
+crop_images
+meta.tsv
+vecs.tsv
