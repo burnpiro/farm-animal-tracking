@@ -62,7 +62,17 @@ This is going to produce two files:
 
 You can visualize those embeddings in [https://projector.tensorflow.org/](https://projector.tensorflow.org/) application. Just upload them as a custom data (use `Load` option).
 
-![](emb-space.png)
+![](assets/emb-space.png)
+
+#### Generate tracking data
+
+```
+$ cd data
+$ python generate_tracking.py
+```
+
+This is going to produce tracking data from videos, so we can evaluate model. Look for `frames_tracking.json` and `pigs_tracking.json` inside `./data/tracking/`. For more details check Wiki.
+
 
 ### Testing two images
 
