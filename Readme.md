@@ -52,7 +52,7 @@ $ python train_siamese.py
 #### Generate Embeddings for Test dataset an visualize it
 
 ```
-$ python generate_siamese_emb_space.py
+$ python helpers/generate_siamese_emb_space.py
 ```
 
 This is going to produce two files:

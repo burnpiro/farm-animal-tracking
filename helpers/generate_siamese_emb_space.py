@@ -11,8 +11,8 @@ from siamese.config import cfg
 
 flags.DEFINE_string('weights', f'{cfg.MODEL.WEIGHTS_PATH}siam-model-0.0012.h5',
                     'path to weights file')
-flags.DEFINE_string('target', './crop_images/5.jpg', 'path to input image')
-flags.DEFINE_string('source', './crop_images/1.jpg', 'path to input image')
+flags.DEFINE_string('target', '../crop_images/5.jpg', 'path to input image')
+flags.DEFINE_string('source', '../crop_images/1.jpg', 'path to input image')
 
 
 def main(_argv):
@@ -25,8 +25,8 @@ def main(_argv):
     dataset = ds_generator.get_dataset()
 
     results = model.predict(dataset)
-    np.savetxt("vecs.tsv", results, delimiter='\t')
-    out_m = io.open('meta.tsv', 'w', encoding='utf-8')
+    np.savetxt("../vecs.tsv", results, delimiter='\t')
+    out_m = io.open('../meta.tsv', 'w', encoding='utf-8')
     for img, labels in tfds.as_numpy(dataset):
         [out_m.write(str(x) + "\n") for x in labels]
     out_m.close()

@@ -40,7 +40,13 @@ AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
 class DataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, folder_path=cfg.TRAIN.DATA_PATH, file_ext="jpg", debug=False, training=True):
+    def __init__(
+        self,
+        folder_path=cfg.TRAIN.DATA_PATH,
+        file_ext="jpg",
+        debug=False,
+        training=True,
+    ):
         """
         Args:
             folder_path: string ## Path to folder with video frames
@@ -52,7 +58,9 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.data_path = folder_path
 
         if not os.path.isdir(folder_path):
-            print("Images folder path {} does not exist. Exiting...".format(folder_path))
+            print(
+                "Images folder path {} does not exist. Exiting...".format(folder_path)
+            )
             sys.exit()
 
         images = []
@@ -60,19 +68,23 @@ class DataGenerator(tf.keras.utils.Sequence):
             for class_dir in os.scandir(video_dir.path):
                 for i, file in enumerate(glob.glob(f"{class_dir.path}/*.{file_ext}")):
                     # For train set it to "i%5 == 1"
-                    isTestData = int(os.path.basename(file)[:-4])>6000
+                    isTestData = int(os.path.basename(file)[:-4]) > 6000
                     if (training and isTestData) or (not training and not isTestData):
                         continue
-                    
+
                     images.append((file, class_dir.name))
 
-        images = pd.DataFrame(images, columns=['path', 'label'])
+        images = pd.DataFrame(images, columns=["path", "label"])
         low_class_count = min(images["label"].value_counts())
         unique_classes = images["label"].unique()
 
         class_dfs = {}
         for class_id in unique_classes:
-            class_dfs[str(class_id)] = images[images['label'] == class_id].sample(frac=1).reset_index(drop=True)
+            class_dfs[str(class_id)] = (
+                images[images["label"] == class_id]
+                .sample(frac=1)
+                .reset_index(drop=True)
+            )
 
         batched = []
         for i in range(0, low_class_count - 1, 2):
@@ -82,9 +94,13 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         batched = np.array(batched)
 
-        batched = batched.reshape((batched.shape[0] * batched.shape[1], batched.shape[2]))
-        self.images = pd.DataFrame(batched, columns=['path', 'label'])
-        print(f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes')
+        batched = batched.reshape(
+            (batched.shape[0] * batched.shape[1], batched.shape[2])
+        )
+        self.images = pd.DataFrame(batched, columns=["path", "label"])
+        print(
+            f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
+        )
 
     def __len__(self):
         return math.ceil(len(self.images) / cfg.TRAIN.BATCH_SIZE)
@@ -100,7 +116,9 @@ class DataGenerator(tf.keras.utils.Sequence):
             ((cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE, 3), class)
 
         """
-        image = tf.keras.preprocessing.image.load_img(image_path, target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE))
+        image = tf.keras.preprocessing.image.load_img(
+            image_path, target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE)
+        )
         image = tf.keras.preprocessing.image.img_to_array(image)
         image = np.expand_dims(image, axis=0)
         image - tf.keras.applications.mobilenet_v2.preprocess_input(image)
@@ -126,10 +144,22 @@ class DataGenerator(tf.keras.utils.Sequence):
         Returns:
             tf.Dataset
         """
-        target = self.images.pop('label').progress_map(DataGenerator.process_label).to_numpy()
-        images = self.images.pop('path').progress_map(DataGenerator.process_image).to_numpy()
+        target = (
+            self.images.pop("label")
+            .progress_map(DataGenerator.process_label)
+            .to_numpy()
+        )
+        images = (
+            self.images.pop("path").progress_map(DataGenerator.process_image).to_numpy()
+        )
         reshaped_images = np.concatenate(images).reshape(
-            (images.shape[0], images[1].shape[0], images[1].shape[1], images[1].shape[2]))
+            (
+                images.shape[0],
+                images[1].shape[0],
+                images[1].shape[1],
+                images[1].shape[2],
+            )
+        )
         ds = tf.data.Dataset.from_tensor_slices((reshaped_images, target))
         ds = ds.cache()
         ds = ds.batch(cfg.TRAIN.BATCH_SIZE)
@@ -137,10 +167,18 @@ class DataGenerator(tf.keras.utils.Sequence):
         return ds
 
     def __getitem__(self, item):
-        images = self.images.loc[item * cfg.TRAIN.BATCH_SIZE:(item + 1) * cfg.TRAIN.BATCH_SIZE]
-        target = images.pop('label').map(DataGenerator.process_label).to_numpy()
-        images = images.pop('path').map(DataGenerator.process_image).to_numpy()
+        images = self.images.loc[
+            item * cfg.TRAIN.BATCH_SIZE : (item + 1) * cfg.TRAIN.BATCH_SIZE
+        ]
+        target = images.pop("label").map(DataGenerator.process_label).to_numpy()
+        images = images.pop("path").map(DataGenerator.process_image).to_numpy()
         reshaped_images = np.concatenate(images).reshape(
-            (images.shape[0], images[1].shape[0], images[1].shape[1], images[1].shape[2]))
+            (
+                images.shape[0],
+                images[1].shape[0],
+                images[1].shape[1],
+                images[1].shape[2],
+            )
+        )
 
         return reshaped_images, target
