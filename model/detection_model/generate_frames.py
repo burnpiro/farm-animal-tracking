@@ -6,7 +6,7 @@ from multiprocessing import Pool
 
 from scipy.io import loadmat
 
-DATASET_DIR = '../PigTrackingDataset2020'
+DATASET_DIR = '../../PigTrackingDataset2020'
 mat_file = os.path.join(DATASET_DIR, 'LocationSelected.mat')
 labels_mat_file = os.path.join(DATASET_DIR, 'InitialLabels.mat')
 videos_dir = os.path.join(DATASET_DIR, 'videos')

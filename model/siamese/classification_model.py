@@ -1,4 +1,4 @@
-from siamese.config import cfg
+from model.siamese.config import cfg
 import tensorflow as tf
 import numpy as np
 import math

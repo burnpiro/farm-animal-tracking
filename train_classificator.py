@@ -1,16 +1,11 @@
-from datetime import datetime
-
 import tensorflow as tf
 gpu = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpu[0], True)
-import math
 from tensorflow.keras.models import Model
 from absl import app
-from siamese.config import cfg
+from model.siamese.config import cfg
 import numpy as np
-import tensorflow_probability as tfp
-from siamese.classification_model import create_model
-from tensorflow_addons import optimizers
+from model.siamese.classification_model import create_model
 
 TRAINABLE = False
 
@@ -18,7 +13,7 @@ target = './crop_images/1.jpg'
 source = './crop_images/5.jpg'
 
 WEIGHTS = './siam-model-0.55.h5'
-WEIGHTS_DIR = 'weights'
+WEIGHTS_DIR = 'model/weights'
 
 
 def preprocess(x):

@@ -1,9 +1,8 @@
 import numpy as np
-from numpy.matrixlib.defmatrix import matrix
 import tensorflow as tf
 from scipy.optimize import linear_sum_assignment
-from scipy.spatial.distance import cdist, cosine, euclidean, mahalanobis
-from siamese.config import cfg
+from scipy.spatial.distance import cosine, mahalanobis
+from model.siamese.config import cfg
 from collections import deque
 from filterpy.kalman import KalmanFilter
 

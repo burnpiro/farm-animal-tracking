@@ -2,11 +2,11 @@
 PigTrackingDataset2020
 PigTrackingDataset2019
 /.idea/
-/model/object_detection/
-/model/checkpoint/
-/model/saved_model/
+/model/detection_model/object_detection/
+/model/detection_model/checkpoint/
+/model/detection_model/saved_model/
 /data/cropped_animals/
-/siamese/weights/*.h5
+/model/siamese/weights/*.h5
 .ipynb_checkpoints
 __pycache__
 logs

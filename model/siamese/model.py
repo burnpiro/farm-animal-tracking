@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
-from siamese.config import cfg
+from model.siamese.config import cfg
 
 
 def euclidean_dist(vect):

@@ -57,7 +57,7 @@ def get_model_detection_function(model):
 
 if __name__ == '__main__':
     pipeline_config = 'model/inference_graph/pipeline.config'
-    model_dir = 'model/inference_graph/checkpoint'
+    model_dir = 'model/detection_model/inference_graph/checkpoint'
 
     configs = config_util.get_configs_from_pipeline_file(pipeline_config)
     model_config = configs['model']
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     detect_fn = get_model_detection_function(detection_model)
 
-    label_map_path = os.path.join("model/", configs['eval_input_config'].label_map_path)
+    label_map_path = os.path.join("model/detection_model/", configs['eval_input_config'].label_map_path)
     label_map = label_map_util.load_labelmap(label_map_path)
     categories = label_map_util.convert_label_map_to_categories(
         label_map,

@@ -2,19 +2,15 @@ import time
 from helpers.bb_helper import get_bb
 from absl.flags import FLAGS
 from absl import app, flags
-from siamese.model import create_model
-from siamese.config import cfg
+from model.siamese.model import create_model
+from model.siamese.config import cfg
 from object_detection.builders import model_builder
-from object_detection.utils import visualization_utils as viz_utils
 from object_detection.utils import config_util
 from object_detection.utils import label_map_util
 import itertools
 import numpy as np
 import cv2
-import json
 import os
-import sys
-
 
 import tensorflow as tf
 gpu = tf.config.experimental.list_physical_devices('GPU')
@@ -68,7 +64,7 @@ def main(argv):
 
     if __name__ == '__main__':
         pipeline_config = 'model/inference_graph/pipeline.config'
-        model_dir = 'model/inference_graph/checkpoint'
+        model_dir = 'model/detection_model/inference_graph/checkpoint'
 
         configs = config_util.get_configs_from_pipeline_file(pipeline_config)
         model_config = configs['model']
@@ -90,7 +86,7 @@ def main(argv):
         detect_fn = get_model_detection_function(detection_model)
 
         label_map_path = os.path.join(
-            "model/", configs['eval_input_config'].label_map_path)
+            "model/detection_model/", configs['eval_input_config'].label_map_path)
         label_map = label_map_util.load_labelmap(label_map_path)
         categories = label_map_util.convert_label_map_to_categories(
             label_map,

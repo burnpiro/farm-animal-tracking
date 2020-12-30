@@ -5,9 +5,8 @@ import tensorflow_addons as tfa
 from absl import app
 
 from data.data_generator import DataGenerator
-from siamese.config import cfg
-from siamese.model import create_model
-import os
+from model.siamese.config import cfg
+from model.siamese.model import create_model
 
 TRAINABLE = False
 
@@ -15,12 +14,12 @@ target = './crop_images/1.jpg'
 source = './crop_images/5.jpg'
 
 WEIGHTS = './siam-model-0.55.h5'
-WEIGHTS_DIR = 'weights'
+WEIGHTS_DIR = 'model/siamese/weights'
 
 
 def main(_argv):
     model = create_model(trainable=TRAINABLE)
-    model.load_weights('weights/siam-model-79_0.0665_0.6347.h5')
+    model.load_weights('weights/siamese/siam-model-91_0.0518_0.5930.h5')
 
     if TRAINABLE:
         model.load_weights(WEIGHTS)

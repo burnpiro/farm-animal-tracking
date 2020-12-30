@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 tqdm.pandas()
 
-from siamese.config import cfg
+from model.siamese.config import cfg
 
 """
 Files have to be stored in a structure:

@@ -1,10 +1,8 @@
 import tensorflow as tf
-from object_detection.utils import dataset_util
+from model.detection_model.object_detection.utils import dataset_util
 
 import os
 import json
-
-from tensorflow.core import example
 
 TRAIN_OUT = 'train.record'
 TEST_OUT = 'test.record'

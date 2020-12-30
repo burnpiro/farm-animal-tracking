@@ -28,7 +28,7 @@ $ unzip inference_graph.tar.zip -d model
 
 To visualize animal detection on video use:
 ```
-$ python show_prediction
+$ python show_prediction.py
 ```
 or for image:
 ```
@@ -39,7 +39,7 @@ $ python run_detection.py
 
 ## Siamese network
 
-You can download current best weights from [Firestore](https://firebasestorage.googleapis.com/v0/b/fat-farm-animal-tracking.appspot.com/o/siam-model-0.0012.h5?alt=media&token=ba006953-81f2-4c4a-bdfb-02607df12d7e). Put them into `./siamese/weights` and use the path as `--weights` parameter.
+You can download current best weights from [Firestore](https://firebasestorage.googleapis.com/v0/b/fat-farm-animal-tracking.appspot.com/o/siam-model-0.0012.h5?alt=media&token=ba006953-81f2-4c4a-bdfb-02607df12d7e). Put them into `./model/siamese/weights` and use the path as `--weights` parameter.
 
 #### Training
 
