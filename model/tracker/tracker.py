@@ -60,9 +60,9 @@ class Track:
         self.VI = None
 
     def bbox_to_xywa(self, bbox):
-        '''
+        """
         Converts bounding box from format (left, top, width, height) to (left, top, width, height/width)
-        '''
+        """
         box = bbox.copy()
         box[3] = bbox[3]/bbox[2]
         return box
@@ -202,7 +202,7 @@ class Tracker:
         rows, cols = linear_sum_assignment(similarity_matrix)
 
         for i, j in zip(rows, cols):
-            if (not admissible[i, j]):
+            if not admissible[i, j]:
                 continue
             # self.tracks[i].embedding = embeddings[j]
             self.tracks[i].embeddings.append(embeddings[j])

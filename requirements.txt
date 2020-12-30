@@ -7,3 +7,5 @@ pillow
 easydict
 pandas
 tqdm
+filterpy
+scipy
