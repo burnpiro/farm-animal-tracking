@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class AbstractModel(ABC):
-    def __init__(self, value):
-        self.value = value
+    def __init__(self):
         super().__init__()
 
     @abstractmethod
