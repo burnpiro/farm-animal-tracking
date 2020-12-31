@@ -15,7 +15,7 @@ __C.NN.DENSE_LAYER_SIZE = 2048
 
 
 __C.MODEL = EasyDict()
-__C.MODEL.WEIGHTS_PATH = "./model/siamese/weights/"
+__C.MODEL.WEIGHTS_PATH = "weights/"
 
 # create Train options dict
 __C.TRAIN = EasyDict()
