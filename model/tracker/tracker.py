@@ -1,8 +1,7 @@
 import numpy as np
-import tensorflow as tf
+from abc import ABC
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cosine, mahalanobis
-from model.siamese.config import cfg
 from collections import deque
 from filterpy.kalman import KalmanFilter
 
@@ -12,6 +11,7 @@ class Track:
         # self.bbox = self.bbox_to_xywa(bbox)        
         self.embedding = embedding
         self.track_id = track_id
+        self.history = []
 
         self.embeddings = deque([embedding], maxlen=10)
         self.kf = KalmanFilter(dim_x=8, dim_z=4)
@@ -53,13 +53,14 @@ class Track:
         self.kf.Q[4:, 4:] *= 0.01
         self.kf.Q *= 0.01
 
-        bbox = self.bbox_to_xywa(bbox)
+        bbox = Track.bbox_to_xywa(bbox)
         self.kf.x = np.concatenate(
             [bbox, np.zeros_like(bbox)], axis=-1)
         # self.embeddings = [embedding]
         self.VI = None
 
-    def bbox_to_xywa(self, bbox):
+    @staticmethod
+    def bbox_to_xywa(bbox):
         """
         Converts bounding box from format (left, top, width, height) to (left, top, width, height/width)
         """
@@ -72,12 +73,13 @@ class Track:
         self.VI = np.linalg.inv(self.kf.P[:4, :4])
 
     def update(self, bbox):
-        bbox = self.bbox_to_xywa(bbox)
+        bbox = Track.bbox_to_xywa(bbox)
         self.kf.update(bbox)
+        self.history.append(bbox)
 
     def get_position_distance(self, new_bbox):
         bbox = self.kf.x[:4]
-        new_bbox = self.bbox_to_xywa(new_bbox)
+        new_bbox = Track.bbox_to_xywa(new_bbox)
         return mahalanobis(new_bbox, bbox, self.VI)
 
     def get_distance(self, new_bbox, new_embedding, similarity_coeff):
@@ -102,38 +104,26 @@ class Track:
         return box
 
 
-class Tracker:
-    def __init__(self, model, paths_num) -> None:
+class Tracker(ABC):
+    def __init__(self, paths_num) -> None:
         self.paths_num = paths_num
-        self.encoder = model
         # self.tracks = [Track() for _ in range(paths_num)]
         self.tracks = None
         self.appearance_weight = 0.8
 
-    def boxes_to_xywh(self, boxes):
+    @staticmethod
+    def boxes_to_xywh(boxes):
         wh = boxes[:, 2:]-boxes[:, :2]
         xy = boxes[:, :2]+wh/2
         return np.concatenate([xy, wh], axis=-1)
 
-    def pre_process(self, frame, detections):
-        boxes_tensors = []
-        for box in detections:
-            x, y, width, height = box
-            left, top = x-width/2, y-height/2
-            bb_image = tf.image.crop_to_bounding_box(
-                frame,
-                int(top*frame.shape[1]),
-                int(left*frame.shape[2]),
-                int(height*frame.shape[1]),
-                int(width*frame.shape[2])
-            )
-            bb_image = tf.image.resize(bb_image, size=(
-                cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE))
-            boxes_tensors.append(bb_image)
+    @staticmethod
+    def pre_process_boxes(boxes):
+        new_boxes = []
+        for idx, (box, _) in enumerate(boxes.items()):
+            new_boxes.append(box)
 
-        boxes_tensors = tf.concat(boxes_tensors, axis=0)
-
-        return boxes_tensors
+        return new_boxes
 
     def similarity_matrix(self, new_bboxes, new_embeddings):
         matrix = np.empty((self.paths_num, new_embeddings.shape[0]))
@@ -163,14 +153,13 @@ class Tracker:
                 )
         return matrix
 
-    def run(self, image, scores, boxes):
-        boxes = np.asarray(boxes)
+    def run(self, boxes, embeddings):
+        boxes = Tracker.pre_process_boxes(boxes)
+        boxes = np.array(boxes)
         if boxes.shape[0] == 0:
             return None
 
-        boxes = self.boxes_to_xywh(boxes)
-        crops = self.pre_process(image, boxes)
-        embeddings = self.encoder.predict(crops)
+        boxes = Tracker.boxes_to_xywh(boxes)
 
         if self.tracks is None:
             if boxes.shape[0] < self.paths_num:
