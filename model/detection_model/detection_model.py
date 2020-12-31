@@ -1,6 +1,7 @@
 from abc import ABC
 import numpy as np
 import os
+import cv2
 import tensorflow as tf
 from object_detection.utils import label_map_util
 from object_detection.utils import config_util
@@ -50,6 +51,7 @@ class DefaultDetectionModel(ABC):
     """
     Default detection model. It wraps TF model and provides easier to understand API.
     """
+
     def __init__(self, config_path=pipeline_config, checkpoint_dir=model_dir):
         super().__init__()
         self.label_id_offset = 1
@@ -112,6 +114,32 @@ class DefaultDetectionModel(ABC):
         )
 
         return boxes
+
+    @staticmethod
+    def draw_bb(image_np: np.ndarray, boxes: dict):
+        """
+        Draws boxes on the image
+        Args:
+            image_np: np.ndarray, Image as np array
+            boxes: Dict<box, class> - Dictionary with BB as keys
+
+        Returns: np.ndarray Image with boxes
+        """
+        result = image_np.copy()
+        width = result.shape[1]
+        height = result.shape[0]
+
+        for idx, (box, _) in enumerate(boxes.items()):
+            ymin, xmin, ymax, xmax = box
+            result = cv2.rectangle(
+                result,
+                (int(xmin * width), int(ymin * height)),
+                (int(xmax * width), int(ymax * height)),
+                (0, 255, 0),
+                2,
+            )
+
+        return result
 
     @staticmethod
     def crop_bb(image_np: np.ndarray, boxes: dict):
