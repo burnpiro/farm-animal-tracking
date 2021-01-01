@@ -82,9 +82,7 @@ class Model(AbstractModel):
         cap.release()
         cv2.destroyAllWindows()
 
-        return {
-            track.track_id: np.array(track.history) for track in self.tracker.tracks
-        }
+        return self.tracker.get_history()
 
     def print_bb_on_image(self, path_to_img: str):
         """

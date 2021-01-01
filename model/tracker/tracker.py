@@ -1,121 +1,8 @@
 import numpy as np
 from abc import ABC
 from scipy.optimize import linear_sum_assignment
-from scipy.spatial.distance import cosine, mahalanobis
-from collections import deque
-from filterpy.kalman import KalmanFilter
 
-
-class Track:
-    def __init__(self, bbox=None, embedding=None, track_id=None) -> None:
-        # self.bbox = self.bbox_to_xywa(bbox)
-        self.embedding = None
-        self.track_id = None
-        self.history = None
-
-        self.embeddings = None
-        self.kf = None
-        self.initialize_tracker(bbox, embedding, track_id)
-
-    def initialize_tracker(self, bbox=None, embedding=None, track_id=None) -> None:
-        # self.bbox = self.bbox_to_xywa(bbox)
-        self.embedding = embedding
-        self.track_id = track_id
-        self.history = []
-
-        self.embeddings = deque([embedding], maxlen=10)
-        self.kf = KalmanFilter(dim_x=8, dim_z=4)
-        dt = 1
-        # Linear motion kalman model
-        # Dynamic matrix
-        self.kf.F = np.array(
-            [
-                [1, 0, 0, 0, dt, 0, 0, 0],
-                [0, 1, 0, 0, 0, dt, 0, 0],
-                [0, 0, 1, 0, 0, 0, dt, 0],
-                [0, 0, 0, 1, 0, 0, 0, dt],
-                [0, 0, 0, 0, 1, 0, 0, 0],
-                [0, 0, 0, 0, 0, 1, 0, 0],
-                [0, 0, 0, 0, 0, 0, 1, 0],
-                [0, 0, 0, 0, 0, 0, 0, 1],
-            ]
-        )
-        # Measurement matrix
-        self.kf.H = np.array(
-            [
-                [1, 0, 0, 0, 0, 0, 0, 0],
-                [0, 1, 0, 0, 0, 0, 0, 0],
-                [0, 0, 1, 0, 0, 0, 0, 0],
-                [0, 0, 0, 1, 0, 0, 0, 0],
-            ]
-        )
-        # Initial uncertainty
-        self.kf.P = np.array(
-            [
-                [3, 0, 0, 0, 0, 0, 0, 0],
-                [0, 3, 0, 0, 0, 0, 0, 0],
-                [0, 0, 1, 0, 0, 0, 0, 0],
-                [0, 0, 0, 3, 0, 0, 0, 0],
-                [0, 0, 0, 0, 10, 0, 0, 0],
-                [0, 0, 0, 0, 0, 10, 0, 0],
-                [0, 0, 0, 0, 0, 0, 10, 0],
-                [0, 0, 0, 0, 0, 0, 0, 10],
-            ]
-        )
-        # Measurement noise covariance
-        self.kf.R *= 0.005
-        # Process Noise Covariance
-        # self.kf.Q[-1, -1] *= 0.001
-        self.kf.Q[4:, 4:] *= 0.01
-        self.kf.Q *= 0.01
-
-        bbox = Track.bbox_to_xywa(bbox)
-        self.kf.x = np.concatenate([bbox, np.zeros_like(bbox)], axis=-1)
-        # self.embeddings = [embedding]
-        self.VI = None
-
-    @staticmethod
-    def bbox_to_xywa(bbox):
-        """
-        Converts bounding box from format (left, top, width, height) to (left, top, width, height/width)
-        """
-        box = bbox.copy()
-        box[3] = bbox[3] / bbox[2]
-        return box
-
-    def predict(self):
-        self.kf.predict()
-        self.VI = np.linalg.inv(self.kf.P[:4, :4])
-
-    def update(self, bbox):
-        bbox = Track.bbox_to_xywa(bbox)
-        self.kf.update(bbox)
-        self.history.append(bbox)
-
-    def get_position_distance(self, new_bbox):
-        bbox = self.kf.x[:4]
-        new_bbox = Track.bbox_to_xywa(new_bbox)
-        return mahalanobis(new_bbox, bbox, self.VI)
-
-    def get_distance(self, new_bbox, new_embedding, similarity_coeff):
-        pos_dist = self.get_position_distance(new_bbox)
-        sim_dist = self.get_similarity_distance(new_embedding)
-
-        return (1 - similarity_coeff) * pos_dist + similarity_coeff * sim_dist
-
-    def get_similarity_distance(self, new_embedding):
-        return np.min(
-            [cosine(embedding, new_embedding) for embedding in self.embeddings]
-        )
-
-    # def set_bbox(self, bbox):
-    #     self.bbox = self.bbox_to_xywa(bbox)
-
-    def get_bbox(self):
-        # box = self.bbox.copy()
-        box = self.kf.x[:4].copy()
-        box[3] = box[3] * box[2]
-        return box
+from model.tracker.track import Track
 
 
 class Tracker(ABC):
@@ -147,6 +34,15 @@ class Tracker(ABC):
             new_boxes.append(box)
 
         return new_boxes
+
+    def get_history(self):
+        """
+
+        Returns:
+            Dict<object_id, List<(x,y)>>
+            Object with list of positions for every tracking object
+        """
+        return {track.track_id: np.array(track.get_history()) for track in self.tracks}
 
     def similarity_matrix(self, new_bboxes, new_embeddings):
         matrix = np.empty((self.paths_num, new_embeddings.shape[0]))
