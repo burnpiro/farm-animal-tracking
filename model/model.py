@@ -98,6 +98,41 @@ class Model(AbstractModel):
         result = DefaultDetectionModel.draw_bb(image_np, boxes)
         return result
 
+    def print_bb_on_video(self, path_to_video: str, out_path: str = "out.mp4"):
+        """
+        Runs object detection and prints bbs on the video frames
+        Args:
+            path_to_video: str - path to video
+            out_path: str - output path for directory
+
+        Returns: np.ndarray
+            Image with boxes
+        """
+        cap = cv2.VideoCapture(path_to_video)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        out = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
+        i = 0
+        pbar = tqdm()
+        while cap.isOpened():
+            ret, frame = cap.read()
+            i += 1
+            pbar.update(i)
+            if frame is None:
+                break
+            frame = frame.astype("uint8")
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            boxes = self.detection_model.predict(rgb_frame)
+            result = DefaultDetectionModel.draw_bb(rgb_frame, boxes)
+
+            out.write(result)
+
+        out.release()
+        cv2.destroyAllWindows()
+
     def recognize_animals_on_image(self, path_to_img: str):
         """
         Runs object recognition and prints them on the image
