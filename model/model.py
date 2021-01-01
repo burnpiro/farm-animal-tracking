@@ -55,6 +55,8 @@ class Model(AbstractModel):
         Returns: List<Dict<object_id, Tuple(x,y)>> or Dict<object_id, List<x,y>>
             Depends on "return_type" value
         """
+        # Reset tracker
+        self.tracker.initialize_tracker()
         cap = cv2.VideoCapture(path_to_video)
 
         i = 0
