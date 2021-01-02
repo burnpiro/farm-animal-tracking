@@ -1,31 +1,135 @@
 import collections
+import numpy as np
 
 import six
 
 STANDARD_COLORS = [
-    'AliceBlue', 'Chartreuse', 'Aqua', 'Aquamarine', 'Azure', 'Beige', 'Bisque',
-    'BlanchedAlmond', 'BlueViolet', 'BurlyWood', 'CadetBlue', 'AntiqueWhite',
-    'Chocolate', 'Coral', 'CornflowerBlue', 'Cornsilk', 'Crimson', 'Cyan',
-    'DarkCyan', 'DarkGoldenRod', 'DarkGrey', 'DarkKhaki', 'DarkOrange',
-    'DarkOrchid', 'DarkSalmon', 'DarkSeaGreen', 'DarkTurquoise', 'DarkViolet',
-    'DeepPink', 'DeepSkyBlue', 'DodgerBlue', 'FireBrick', 'FloralWhite',
-    'ForestGreen', 'Fuchsia', 'Gainsboro', 'GhostWhite', 'Gold', 'GoldenRod',
-    'Salmon', 'Tan', 'HoneyDew', 'HotPink', 'IndianRed', 'Ivory', 'Khaki',
-    'Lavender', 'LavenderBlush', 'LawnGreen', 'LemonChiffon', 'LightBlue',
-    'LightCoral', 'LightCyan', 'LightGoldenRodYellow', 'LightGray', 'LightGrey',
-    'LightGreen', 'LightPink', 'LightSalmon', 'LightSeaGreen', 'LightSkyBlue',
-    'LightSlateGray', 'LightSlateGrey', 'LightSteelBlue', 'LightYellow', 'Lime',
-    'LimeGreen', 'Linen', 'Magenta', 'MediumAquaMarine', 'MediumOrchid',
-    'MediumPurple', 'MediumSeaGreen', 'MediumSlateBlue', 'MediumSpringGreen',
-    'MediumTurquoise', 'MediumVioletRed', 'MintCream', 'MistyRose', 'Moccasin',
-    'NavajoWhite', 'OldLace', 'Olive', 'OliveDrab', 'Orange', 'OrangeRed',
-    'Orchid', 'PaleGoldenRod', 'PaleGreen', 'PaleTurquoise', 'PaleVioletRed',
-    'PapayaWhip', 'PeachPuff', 'Peru', 'Pink', 'Plum', 'PowderBlue', 'Purple',
-    'Red', 'RosyBrown', 'RoyalBlue', 'SaddleBrown', 'Green', 'SandyBrown',
-    'SeaGreen', 'SeaShell', 'Sienna', 'Silver', 'SkyBlue', 'SlateBlue',
-    'SlateGray', 'SlateGrey', 'Snow', 'SpringGreen', 'SteelBlue', 'GreenYellow',
-    'Teal', 'Thistle', 'Tomato', 'Turquoise', 'Violet', 'Wheat', 'White',
-    'WhiteSmoke', 'Yellow', 'YellowGreen'
+    "AliceBlue",
+    "Chartreuse",
+    "Aqua",
+    "Aquamarine",
+    "Azure",
+    "Beige",
+    "Bisque",
+    "BlanchedAlmond",
+    "BlueViolet",
+    "BurlyWood",
+    "CadetBlue",
+    "AntiqueWhite",
+    "Chocolate",
+    "Coral",
+    "CornflowerBlue",
+    "Cornsilk",
+    "Crimson",
+    "Cyan",
+    "DarkCyan",
+    "DarkGoldenRod",
+    "DarkGrey",
+    "DarkKhaki",
+    "DarkOrange",
+    "DarkOrchid",
+    "DarkSalmon",
+    "DarkSeaGreen",
+    "DarkTurquoise",
+    "DarkViolet",
+    "DeepPink",
+    "DeepSkyBlue",
+    "DodgerBlue",
+    "FireBrick",
+    "FloralWhite",
+    "ForestGreen",
+    "Fuchsia",
+    "Gainsboro",
+    "GhostWhite",
+    "Gold",
+    "GoldenRod",
+    "Salmon",
+    "Tan",
+    "HoneyDew",
+    "HotPink",
+    "IndianRed",
+    "Ivory",
+    "Khaki",
+    "Lavender",
+    "LavenderBlush",
+    "LawnGreen",
+    "LemonChiffon",
+    "LightBlue",
+    "LightCoral",
+    "LightCyan",
+    "LightGoldenRodYellow",
+    "LightGray",
+    "LightGrey",
+    "LightGreen",
+    "LightPink",
+    "LightSalmon",
+    "LightSeaGreen",
+    "LightSkyBlue",
+    "LightSlateGray",
+    "LightSlateGrey",
+    "LightSteelBlue",
+    "LightYellow",
+    "Lime",
+    "LimeGreen",
+    "Linen",
+    "Magenta",
+    "MediumAquaMarine",
+    "MediumOrchid",
+    "MediumPurple",
+    "MediumSeaGreen",
+    "MediumSlateBlue",
+    "MediumSpringGreen",
+    "MediumTurquoise",
+    "MediumVioletRed",
+    "MintCream",
+    "MistyRose",
+    "Moccasin",
+    "NavajoWhite",
+    "OldLace",
+    "Olive",
+    "OliveDrab",
+    "Orange",
+    "OrangeRed",
+    "Orchid",
+    "PaleGoldenRod",
+    "PaleGreen",
+    "PaleTurquoise",
+    "PaleVioletRed",
+    "PapayaWhip",
+    "PeachPuff",
+    "Peru",
+    "Pink",
+    "Plum",
+    "PowderBlue",
+    "Purple",
+    "Red",
+    "RosyBrown",
+    "RoyalBlue",
+    "SaddleBrown",
+    "Green",
+    "SandyBrown",
+    "SeaGreen",
+    "SeaShell",
+    "Sienna",
+    "Silver",
+    "SkyBlue",
+    "SlateBlue",
+    "SlateGray",
+    "SlateGrey",
+    "Snow",
+    "SpringGreen",
+    "SteelBlue",
+    "GreenYellow",
+    "Teal",
+    "Thistle",
+    "Tomato",
+    "Turquoise",
+    "Violet",
+    "Wheat",
+    "White",
+    "WhiteSmoke",
+    "Yellow",
+    "YellowGreen",
 ]
 
 
@@ -51,34 +155,35 @@ def _get_multiplier_for_color_randomness():
         return 1
 
     # Return the closest prime number to num_colors / 10.
-    abs_distance = [np.abs(num_colors / 10. - p) for p in prime_candidates]
+    abs_distance = [np.abs(num_colors / 10.0 - p) for p in prime_candidates]
     num_candidates = len(abs_distance)
     inds = [i for _, i in sorted(zip(abs_distance, range(num_candidates)))]
     return prime_candidates[inds[0]]
 
 
 def get_bb(
-        image,
-        boxes,
-        classes,
-        scores,
-        category_index,
-        instance_masks=None,
-        instance_boundaries=None,
-        keypoints=None,
-        keypoint_scores=None,
-        keypoint_edges=None,
-        track_ids=None,
-        use_normalized_coordinates=False,
-        max_boxes_to_draw=20,
-        min_score_thresh=.5,
-        agnostic_mode=False,
-        line_thickness=4,
-        groundtruth_box_visualization_color='black',
-        skip_boxes=False,
-        skip_scores=False,
-        skip_labels=False,
-        skip_track_ids=False):
+    image,
+    boxes,
+    classes,
+    scores,
+    category_index,
+    instance_masks=None,
+    instance_boundaries=None,
+    keypoints=None,
+    keypoint_scores=None,
+    keypoint_edges=None,
+    track_ids=None,
+    use_normalized_coordinates=False,
+    max_boxes_to_draw=20,
+    min_score_thresh=0.5,
+    agnostic_mode=False,
+    line_thickness=4,
+    groundtruth_box_visualization_color="black",
+    skip_boxes=False,
+    skip_scores=False,
+    skip_labels=False,
+    skip_track_ids=False,
+):
     """Overlay labeled boxes on an image with formatted scores and label names.
 
     This function groups boxes that correspond to the same location
@@ -158,33 +263,53 @@ def get_bb(
             if scores is None:
                 box_to_color_map[box] = groundtruth_box_visualization_color
             else:
-                display_str = ''
+                display_str = ""
                 if not skip_labels:
                     if not agnostic_mode:
                         if classes[i] in six.viewkeys(category_index):
-                            class_name = category_index[classes[i]]['name']
+                            class_name = category_index[classes[i]]["name"]
                         else:
-                            class_name = 'N/A'
+                            class_name = "N/A"
                         display_str = str(class_name)
                 if not skip_scores:
                     if not display_str:
-                        display_str = '{}%'.format(round(100 * scores[i]))
+                        display_str = "{}%".format(round(100 * scores[i]))
                     else:
-                        display_str = '{}: {}%'.format(display_str, round(100 * scores[i]))
+                        display_str = "{}: {}%".format(
+                            display_str, round(100 * scores[i])
+                        )
                 if not skip_track_ids and track_ids is not None:
                     if not display_str:
-                        display_str = 'ID {}'.format(track_ids[i])
+                        display_str = "ID {}".format(track_ids[i])
                     else:
-                        display_str = '{}: ID {}'.format(display_str, track_ids[i])
+                        display_str = "{}: ID {}".format(display_str, track_ids[i])
                 box_to_display_str_map[box].append(display_str)
                 if agnostic_mode:
-                    box_to_color_map[box] = 'DarkOrange'
+                    box_to_color_map[box] = "DarkOrange"
                 elif track_ids is not None:
                     prime_multipler = _get_multiplier_for_color_randomness()
                     box_to_color_map[box] = STANDARD_COLORS[
-                        (prime_multipler * track_ids[i]) % len(STANDARD_COLORS)]
+                        (prime_multipler * track_ids[i]) % len(STANDARD_COLORS)
+                    ]
                 else:
                     box_to_color_map[box] = STANDARD_COLORS[
-                        classes[i] % len(STANDARD_COLORS)]
+                        classes[i] % len(STANDARD_COLORS)
+                    ]
 
     return box_to_color_map
+
+
+def pre_process_boxes(boxes):
+    """
+    Converts default boxes Dict into List of boxes
+    Args:
+        boxes: Dict<bbox: class_name>
+
+    Returns: List<(y1,x1,y2,x2)>
+        List of bboxes
+    """
+    new_boxes = []
+    for idx, (box, _) in enumerate(boxes.items()):
+        new_boxes.append(box)
+
+    return new_boxes

@@ -1,15 +1,17 @@
 import numpy as np
-from abc import ABC
 
 
 from scipy.spatial.distance import cosine, mahalanobis
 from collections import deque
 from filterpy.kalman import KalmanFilter
+from model.tracker.abstract_classes import AbstractTrack
 
 
-class Track(ABC):
+class Track(AbstractTrack):
+
     def __init__(self, bbox=None, embedding=None, track_id=None) -> None:
         # self.bbox = self.bbox_to_xywa(bbox)
+        super().__init__()
         self.embedding = None
         self.track_id = None
         self.history = None
@@ -17,9 +19,9 @@ class Track(ABC):
         self.embeddings = None
         self.kf = None
         self.VI = None
-        self.initialize_tracker(bbox, embedding, track_id)
+        self.initialize_track(bbox, embedding, track_id)
 
-    def initialize_tracker(self, bbox=None, embedding=None, track_id=None) -> None:
+    def initialize_track(self, bbox=None, embedding=None, track_id=None) -> None:
         # self.bbox = self.bbox_to_xywa(bbox)
         self.embedding = embedding
         self.track_id = track_id

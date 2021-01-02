@@ -2,15 +2,16 @@ import numpy as np
 from abc import ABC
 from scipy.optimize import linear_sum_assignment
 
+from helpers.bb_helper import pre_process_boxes
 from model.tracker.track import Track
+from model.tracker.abstract_classes import AbstractTracker
 
 
-class Tracker(ABC):
+class Tracker(AbstractTracker):
     def __init__(self, paths_num) -> None:
-        self.paths_num = paths_num
-        self.tracks = None
+        super().__init__()
         self.appearance_weight = 0.8
-        self.initialize_tracker()
+        self.paths_num = paths_num
 
     def initialize_tracker(self) -> None:
         """
@@ -26,14 +27,6 @@ class Tracker(ABC):
         wh = boxes[:, 2:] - boxes[:, :2]
         xy = boxes[:, :2] + wh / 2
         return np.concatenate([xy, wh], axis=-1)
-
-    @staticmethod
-    def pre_process_boxes(boxes):
-        new_boxes = []
-        for idx, (box, _) in enumerate(boxes.items()):
-            new_boxes.append(box)
-
-        return new_boxes
 
     def get_history(self):
         """
@@ -70,7 +63,7 @@ class Tracker(ABC):
         return matrix
 
     def run(self, boxes, embeddings):
-        boxes = Tracker.pre_process_boxes(boxes)
+        boxes = pre_process_boxes(boxes)
         boxes = np.array(boxes)
         if boxes.shape[0] == 0:
             return None
