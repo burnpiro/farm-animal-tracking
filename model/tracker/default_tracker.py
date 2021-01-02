@@ -1,26 +1,27 @@
 import numpy as np
+import cv2
 
-from helpers.bb_helper import pre_process_boxes
+from helpers.bb_helper import pre_process_boxes, bbox_to_position
 from model.tracker.default_track import DefaultTrack
 from model.tracker.abstract_classes import AbstractTracker
 
+font = cv2.FONT_HERSHEY_SIMPLEX
+
 
 class DefaultTracker(AbstractTracker):
-    def __init__(self, paths_num) -> None:
+    def __init__(self, labels: list = None) -> None:
         super().__init__()
-        self.paths_num = paths_num
         self.tracks = None
-        self.initialize_tracker()
+        self.labels = labels
+        self.reset_tracker()
 
-    def initialize_tracker(self) -> None:
+    def reset_tracker(self) -> None:
         """
             Initializes tracker and resets tracks
         Returns: None
 
         """
-        self.tracks = [
-                DefaultTrack(i + 1) for i in range(self.paths_num)
-            ]
+        self.tracks = []
 
     def get_history(self):
         """
@@ -29,7 +30,38 @@ class DefaultTracker(AbstractTracker):
             Dict<object_id, List<(x,y)>>
             Object with list of positions for every tracking object
         """
-        return {track.track_id: np.array(track.get_history()) for track in self.tracks}
+        return {track.track_id: track.get_history() for track in self.tracks}
+
+    def draw_tracked_objects(self, image_np: np.ndarray):
+        result = image_np.copy()
+        width = result.shape[1]
+        height = result.shape[0]
+
+        for track in self.tracks:
+            last_history = track.get_history()[-1]
+            ymin, xmin, ymax, xmax = track.history[-1]
+            result = cv2.rectangle(
+                result,
+                (int(xmin * width), int(ymin * height)),
+                (int(xmax * width), int(ymax * height)),
+                (0, 255, 0),
+                2,
+            )
+            label = str(track.track_id)
+            if self.labels is not None:
+                label = self.labels[track.track_id]
+            cv2.putText(
+                result,
+                label,
+                (int(last_history[0]*width), int(last_history[1]*height)),
+                font,
+                0.99,
+                (255, 255, 255),
+                2,
+                cv2.LINE_AA,
+            )
+
+        return result
 
     def run(self, boxes, embeddings):
         """
@@ -46,12 +78,28 @@ class DefaultTracker(AbstractTracker):
         if boxes.shape[0] == 0:
             return None
 
-        if self.tracks is None:
-            if boxes.shape[0] < self.paths_num:
-                return None
+        if len(self.tracks) < boxes.shape[0]:
+            for i in range(len(self.tracks), boxes.shape[0]):
+                self.tracks.append(DefaultTrack(i))
 
-            self.tracks = [
-                DefaultTrack(i + 1) for i in range(self.paths_num)
-            ]
+        distance_to_tracks = np.empty((boxes.shape[0], len(self.tracks)))
+        for box_id, bbox in enumerate(boxes):
+            for track_id, track in enumerate(self.tracks):
+                distance_to_tracks[box_id][track_id] = track.get_distance_to_box(bbox)
 
+        updated_tracks = []
+        while np.min(distance_to_tracks) != np.inf:
+            smallest_distance_pos = np.unravel_index(
+                distance_to_tracks.argmin(), distance_to_tracks.shape
+            )
+            self.tracks[smallest_distance_pos[1]].update(
+                boxes[smallest_distance_pos[0]]
+            )
+            updated_tracks.append(smallest_distance_pos[1])
+            distance_to_tracks[smallest_distance_pos[0], :] = np.inf
+            distance_to_tracks[:, smallest_distance_pos[1]] = np.inf
 
+        if len(updated_tracks) < len(self.tracks):
+            for track_id, track in enumerate(self.tracks):
+                if track_id not in updated_tracks:
+                    track.update([-1, -1, -1, -1])

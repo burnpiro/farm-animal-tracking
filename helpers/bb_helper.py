@@ -1,5 +1,6 @@
 import collections
 import numpy as np
+from statistics import mean
 
 import six
 
@@ -313,3 +314,15 @@ def pre_process_boxes(boxes):
         new_boxes.append(box)
 
     return new_boxes
+
+
+def bbox_to_position(bbox):
+    """
+    Returns x,y position from bbox
+    Args:
+        bbox: List<(y1,x1,y2,x2)>
+
+    Returns: List<(x,y)>
+
+    """
+    return [float(mean([bbox[1], bbox[3]])), float(mean([bbox[0], bbox[2]]))]

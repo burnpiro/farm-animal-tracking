@@ -5,7 +5,7 @@ from tqdm import tqdm
 from model.abstract_model import AbstractModel
 from model.detection_model.detection_model import DefaultDetectionModel
 from model.siamese.siamese_model import DefaultSiameseModel
-from model.tracker.tracker import Tracker
+from model.tracker.default_tracker import DefaultTracker
 
 
 class Model(AbstractModel):
@@ -13,7 +13,7 @@ class Model(AbstractModel):
         self,
         detection_model: DefaultDetectionModel,
         recognition_model: DefaultSiameseModel,
-        tracker: Tracker,
+        tracker: DefaultTracker,
     ):
         """
         Args:
@@ -42,11 +42,14 @@ class Model(AbstractModel):
 
         return embeddings
 
-    def predict_video(self, path_to_video: str, return_type="objets"):
+    def predict_video(
+        self, path_to_video: str, return_type="objets", out_path: str = None
+    ):
         """
 
         Args:
-            path_to_video:
+            out_path: string or None - defined output path for tracking video dump (if none there is no mp4)
+            path_to_video: string
             return_type: string - type of return objects, either "frames" or "objects"
                 "frames" - returns predictions in form of the list where each element is a prediction for one frame
                 "objects" - returns predictions in form of the dict, each element is a list of predictions for given
@@ -61,6 +64,13 @@ class Model(AbstractModel):
 
         i = 0
         num_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        if out_path is not None:
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = int(cap.get(cv2.CAP_PROP_FPS))
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            out = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
+
         pbar = tqdm(total=num_of_frames)
 
         while cap.isOpened():
@@ -78,6 +88,12 @@ class Model(AbstractModel):
             embeddings = self.recognition_model.predict(cropped_images)
             self.tracker.run(boxes, embeddings)
 
+            if out_path is not None:
+                result = self.tracker.draw_tracked_objects(rgb_frame)
+                out.write(result)
+
+        if out_path is not None:
+            out.release()
         pbar.close()
         cap.release()
         cv2.destroyAllWindows()
