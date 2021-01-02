@@ -56,7 +56,7 @@ class DefaultTracker(AbstractTracker):
                 (int(last_history[0]*width), int(last_history[1]*height)),
                 font,
                 0.99,
-                (255, 255, 255),
+                (0, 0, 255),
                 2,
                 cv2.LINE_AA,
             )
