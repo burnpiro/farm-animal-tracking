@@ -12,8 +12,9 @@ class Tracker(AbstractTracker):
         super().__init__()
         self.appearance_weight = 0.8
         self.paths_num = paths_num
+        self.reset_tracker()
 
-    def initialize_tracker(self) -> None:
+    def reset_tracker(self) -> None:
         """
             Initializes tracker and resets tracks
         Returns: None

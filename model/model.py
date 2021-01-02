@@ -56,7 +56,7 @@ class Model(AbstractModel):
             Depends on "return_type" value
         """
         # Reset tracker
-        self.tracker.initialize_tracker()
+        self.tracker.reset_tracker()
         cap = cv2.VideoCapture(path_to_video)
 
         i = 0
