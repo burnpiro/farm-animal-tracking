@@ -14,11 +14,11 @@ class DefaultTrack(AbstractTrack):
 
         self.initialize_track(track_id)
 
-    def initialize_track(self, track_id=None) -> None:
+    def initialize_track(self, track_id=None, **kwargs) -> None:
         self.track_id = track_id
         self.history = []
 
-    def update(self, bbox):
+    def update(self, bbox, embedding, **kwargs):
         self.history.append(bbox)
 
     def has_history(self):
