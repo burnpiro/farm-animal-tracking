@@ -10,6 +10,7 @@ if len(sys.argv) != 2:
 from model.detection_model.detection_model import DefaultDetectionModel
 from model.siamese.siamese_model import DefaultSiameseModel
 from model.tracker.default_tracker import DefaultTracker
+from model.tracker.simple_siamese_tracker import SimpleSiameseTracker
 from model.model import Model
 
 names = [
@@ -31,7 +32,7 @@ names = [
     'Scott',
     'Frank'
 ]
-model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
+model = Model(DefaultDetectionModel(), DefaultSiameseModel(), SimpleSiameseTracker(names))
 
 paths = model.predict_video(sys.argv[1], out_path="test_track.mp4")
 
