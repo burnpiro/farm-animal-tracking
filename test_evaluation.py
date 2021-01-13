@@ -11,10 +11,15 @@ if len(sys.argv) != 2:
     print(f"USAGE: {sys.argv[0]} <path_to_video>")
     exit()
 
+import tensorflow as tf
+gpu = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpu[0], True)
+
 from model.detection_model.detection_model import DefaultDetectionModel
 from model.siamese.siamese_model import DefaultSiameseModel
 from model.tracker.default_tracker import DefaultTracker
 from model.tracker.simple_siamese_tracker import SimpleSiameseTracker
+from model.tracker.tracker import Tracker
 from model.model import Model
 from data.evaluator import Evaluator
 from helpers.score_processing import extract_scores, print_path_comparison
@@ -39,8 +44,10 @@ names = [
     "Frank",
 ]
 model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
+# model = Model(DefaultDetectionModel(), DefaultSiameseModel(), Tracker(7))
 
-evaluator = Evaluator(model, ["test.mp4"], ["data/tracking/01/pigs_tracking.json"])
+evaluator = Evaluator(model, ["test.mp4"], [
+                      "data/tracking/01/pigs_tracking.json"])
 scores, annotations, paths = evaluator.run_evaluation_for_video(
     "test.mp4",
     "data/tracking/01/pigs_tracking.json",
@@ -69,12 +76,13 @@ for obj_id, annotation in annotations.items():
 
 json.dump(
     annotations,
-    codecs.open(os.path.join(out_dir, "annotations.json"), "w", encoding="utf-8"),
+    codecs.open(os.path.join(out_dir, "annotations.json"),
+                "w", encoding="utf-8"),
     sort_keys=False,
     separators=(",", ":"),
 )
 json.dump(
-    paths,
+    {k:v.tolist() for k,v in paths.items()},
     codecs.open(os.path.join(out_dir, "out.json"), "w", encoding="utf-8"),
     sort_keys=False,
     separators=(",", ":"),

@@ -87,6 +87,16 @@ class Track(AbstractTrack):
         box[3] = bbox[3] / bbox[2]
         return box
 
+    # @staticmethod
+    # def xywa_to_bbox(bbox):
+    #     """
+    #     Converts bounding box from format (left, top, width, height) to (left, top, width, height/width)
+    #     """
+    #     box = bbox.copy()
+    #     box[3] = bbox[3] * bbox[2]
+    #     box[2:] += box[:2]
+    #     return box
+
     def predict(self):
         self.kf.predict()
         self.VI = np.linalg.inv(self.kf.P[:4, :4])
@@ -116,7 +126,7 @@ class Track(AbstractTrack):
     #     self.bbox = self.bbox_to_xywa(bbox)
 
     def get_history(self):
-        return self.history
+        return [h[:2][::-1] for h in self.history]
 
     def get_bbox(self):
         # box = self.bbox.copy()

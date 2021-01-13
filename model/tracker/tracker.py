@@ -36,7 +36,9 @@ class Tracker(AbstractTracker):
             Dict<object_id, List<(x,y)>>
             Object with list of positions for every tracking object
         """
-        return {track.track_id: np.array(track.get_history()) for track in self.tracks}
+        history = {track.track_id: np.array(track.get_history()) for track in self.tracks}
+        # print(history)
+        return history
 
     def similarity_matrix(self, new_bboxes, new_embeddings):
         matrix = np.empty((self.paths_num, new_embeddings.shape[0]))
