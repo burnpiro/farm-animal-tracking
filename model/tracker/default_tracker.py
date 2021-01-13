@@ -93,7 +93,7 @@ class DefaultTracker(AbstractTracker):
                 distance_to_tracks.argmin(), distance_to_tracks.shape
             )
             self.tracks[smallest_distance_pos[1]].update(
-                boxes[smallest_distance_pos[0]]
+                boxes[smallest_distance_pos[0]], embeddings[smallest_distance_pos[0]]
             )
             updated_tracks.append(smallest_distance_pos[1])
             distance_to_tracks[smallest_distance_pos[0], :] = np.inf
@@ -102,4 +102,4 @@ class DefaultTracker(AbstractTracker):
         if len(updated_tracks) < len(self.tracks):
             for track_id, track in enumerate(self.tracks):
                 if track_id not in updated_tracks:
-                    track.update([-1, -1, -1, -1])
+                    track.update([-1, -1, -1, -1], None)

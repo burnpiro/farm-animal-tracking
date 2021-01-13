@@ -6,15 +6,16 @@ class AbstractTrack(ABC):
         self.tracks = None
 
     @abstractmethod
-    def initialize_track(self, track_id=None) -> None:
+    def initialize_track(self, track_id=None, **kwargs) -> None:
         pass
 
     @abstractmethod
-    def update(self, bbox) -> None:
+    def update(self, bbox, embedding, **kwargs) -> None:
         """
-         Updates current state of the track base on given bbox
+         Updates current state of the track base on given bbox and embedding
         Args:
-            bbox: List<y1,x1,y2,x2>
+            bbox: List<y1,x1,y2,x2> - bbox coordinates top-left and bottom-right
+            embedding: ndarrray - obj embedding
 
         Returns: None
 
@@ -49,7 +50,7 @@ class AbstractTracker(ABC):
         pass
 
     @abstractmethod
-    def run(self, boxes, embeddings) -> None:
+    def run(self, boxes, embeddings, **kwargs) -> None:
         """
         Updates all tracking objects (or add new ones) base on new bboxes and embeddings definition
         Runs every frame

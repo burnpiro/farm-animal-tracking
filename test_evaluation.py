@@ -17,10 +17,20 @@ if len(sys.argv) != 2:
     print(f"USAGE: {sys.argv[0]} <path_to_video>")
     exit()
 
+<<<<<<< HEAD
 import tensorflow as tf
 gpu = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpu[0], True)
 
+=======
+from model.detection_model.detection_model import DefaultDetectionModel
+from model.siamese.siamese_model import DefaultSiameseModel
+from model.tracker.default_tracker import DefaultTracker
+from model.tracker.simple_siamese_tracker import SimpleSiameseTracker
+from model.model import Model
+from data.evaluator import Evaluator
+from helpers.score_processing import extract_scores, print_path_comparison
+>>>>>>> a142c18db27f34f6d3822c8c110341db11c98091
 
 names = [
     "James",
@@ -47,13 +57,13 @@ model = Model(DefaultDetectionModel(), DefaultSiameseModel(), Tracker(7))
 evaluator = Evaluator(model, ["test.mp4"], [
                       "data/tracking/01/pigs_tracking.json"])
 scores, annotations, paths = evaluator.run_evaluation_for_video(
-    "test.mp4", "data/tracking/01/pigs_tracking.json", "tracking_only", 75
+    "test.mp4",
+    "data/tracking/01/pigs_tracking.json",
+    "tracking_only",
+    75,
+    compare_parts=True,
 )
-print(scores)
-scores = {
-    key: {"abs_err": value, "mae": value / len(paths[key])}
-    for key, value in scores.items()
-}
+scores = extract_scores(scores, paths)
 
 out_dir = os.path.join(
     "experiments", datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -63,11 +73,21 @@ if not os.path.isdir(out_dir):
     os.mkdir(out_dir)
 
 for obj_id, annotation in annotations.items():
+<<<<<<< HEAD
     cv2.imwrite(
         os.path.join(out_dir, f"{obj_id}_compare.jpg"),
         Evaluator.draw_paths_comparison(
             annotation[75: 75+len(paths[obj_id])], paths[obj_id]
         ),
+=======
+    print_path_comparison(
+        out_dir,
+        annotation[75: 75 + len(paths[obj_id])],
+        paths[obj_id],
+        obj_id,
+        interval=scores[obj_id]["intervals"]["interval"],
+        parts=scores[obj_id]["intervals"]["parts"],
+>>>>>>> a142c18db27f34f6d3822c8c110341db11c98091
     )
 
 json.dump(
