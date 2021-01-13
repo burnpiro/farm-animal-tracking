@@ -73,8 +73,8 @@ class Evaluator:
             paths: Dict<object_id, List<x,y>>
         """
         annotations = json.load(codecs.open(path_to_annotations))
-        print(len(annotations["4"]))
         paths = self.model.predict_video(path_to_video)
+        # print(paths)
 
         if eval_type == "tracking_only":
             path_mapping = {}
@@ -85,11 +85,14 @@ class Evaluator:
                     distances[path_id] = euclidean(path[0], ann_path[0][:2])
 
                 loop = 1
+                # print(min(distances.items(), key=operator.itemgetter(1)))
                 closest_path_idx = min(distances.items(), key=operator.itemgetter(1))[0]
+
+                distances = list(distances.items())
+                distances.sort(key=operator.itemgetter(1))
+
                 while closest_path_idx in assigned_paths:
-                    closest_path_idx = min(
-                        distances.items(), key=operator.itemgetter(1)
-                    )[loop]
+                    closest_path_idx = distances[loop][0]
                     loop += 1
 
                 path_mapping[annotation_id] = closest_path_idx

@@ -76,7 +76,7 @@ class Model(AbstractModel):
         while cap.isOpened():
             ret, frame = cap.read()
             i += 1
-            pbar.update(i)
+            pbar.update(1)
             if frame is None:
                 break
 
