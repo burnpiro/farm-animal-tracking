@@ -1,82 +1,30 @@
 import numpy as np
 
 
-from scipy.spatial.distance import cosine, mahalanobis
+from scipy.spatial.distance import cosine, euclidean
 from collections import deque
-from filterpy.kalman import KalmanFilter
 from model.tracker.abstract_classes import AbstractTrack
 
 
 class Track(AbstractTrack):
 
     def __init__(self, bbox=None, embedding=None, track_id=None) -> None:
-        # self.bbox = self.bbox_to_xywa(bbox)
         super().__init__()
         self.embedding = None
         self.track_id = None
         self.history = None
 
         self.embeddings = None
-        self.kf = None
-        self.VI = None
+        self.bbox = None
+
         self.initialize_track(bbox, embedding, track_id)
 
     def initialize_track(self, bbox=None, embedding=None, track_id=None) -> None:
-        # self.bbox = self.bbox_to_xywa(bbox)
         self.embedding = embedding
         self.track_id = track_id
-        self.history = []
-
+        self.bbox = self.bbox_to_xywa(bbox)
+        self.history = [] if bbox is None else [bbox]
         self.embeddings = deque([embedding], maxlen=10)
-        self.kf = KalmanFilter(dim_x=8, dim_z=4)
-        dt = 1
-        # Linear motion kalman model
-        # Dynamic matrix
-        self.kf.F = np.array(
-            [
-                [1, 0, 0, 0, dt, 0, 0, 0],
-                [0, 1, 0, 0, 0, dt, 0, 0],
-                [0, 0, 1, 0, 0, 0, dt, 0],
-                [0, 0, 0, 1, 0, 0, 0, dt],
-                [0, 0, 0, 0, 1, 0, 0, 0],
-                [0, 0, 0, 0, 0, 1, 0, 0],
-                [0, 0, 0, 0, 0, 0, 1, 0],
-                [0, 0, 0, 0, 0, 0, 0, 1],
-            ]
-        )
-        # Measurement matrix
-        self.kf.H = np.array(
-            [
-                [1, 0, 0, 0, 0, 0, 0, 0],
-                [0, 1, 0, 0, 0, 0, 0, 0],
-                [0, 0, 1, 0, 0, 0, 0, 0],
-                [0, 0, 0, 1, 0, 0, 0, 0],
-            ]
-        )
-        # Initial uncertainty
-        self.kf.P = np.array(
-            [
-                [3, 0, 0, 0, 0, 0, 0, 0],
-                [0, 3, 0, 0, 0, 0, 0, 0],
-                [0, 0, 1, 0, 0, 0, 0, 0],
-                [0, 0, 0, 3, 0, 0, 0, 0],
-                [0, 0, 0, 0, 10, 0, 0, 0],
-                [0, 0, 0, 0, 0, 10, 0, 0],
-                [0, 0, 0, 0, 0, 0, 10, 0],
-                [0, 0, 0, 0, 0, 0, 0, 10],
-            ]
-        )
-        # Measurement noise covariance
-        self.kf.R *= 0.005
-        # Process Noise Covariance
-        # self.kf.Q[-1, -1] *= 0.001
-        self.kf.Q[4:, 4:] *= 0.01
-        self.kf.Q *= 0.01
-
-        bbox = Track.bbox_to_xywa(bbox)
-        self.kf.x = np.concatenate([bbox, np.zeros_like(bbox)], axis=-1)
-        # self.embeddings = [embedding]
-        self.VI = None
 
     @staticmethod
     def bbox_to_xywa(bbox):
@@ -87,29 +35,15 @@ class Track(AbstractTrack):
         box[3] = bbox[3] / bbox[2]
         return box
 
-    # @staticmethod
-    # def xywa_to_bbox(bbox):
-    #     """
-    #     Converts bounding box from format (left, top, width, height) to (left, top, width, height/width)
-    #     """
-    #     box = bbox.copy()
-    #     box[3] = bbox[3] * bbox[2]
-    #     box[2:] += box[:2]
-    #     return box
-
-    def predict(self):
-        self.kf.predict()
-        self.VI = np.linalg.inv(self.kf.P[:4, :4])
-
     def update(self, bbox):
         bbox = Track.bbox_to_xywa(bbox)
-        self.kf.update(bbox)
-        self.history.append(bbox)
+        self.bbox = bbox
+        self.history.append(self.bbox[:2].copy())
 
     def get_position_distance(self, new_bbox):
-        bbox = self.kf.x[:4]
+        bbox = self.bbox
         new_bbox = Track.bbox_to_xywa(new_bbox)
-        return mahalanobis(new_bbox, bbox, self.VI)
+        return euclidean(new_bbox, bbox)
 
     def get_distance(self, new_bbox, new_embedding, similarity_coeff):
         pos_dist = self.get_position_distance(new_bbox)
@@ -122,14 +56,10 @@ class Track(AbstractTrack):
             [cosine(embedding, new_embedding) for embedding in self.embeddings]
         )
 
-    # def set_bbox(self, bbox):
-    #     self.bbox = self.bbox_to_xywa(bbox)
-
     def get_history(self):
         return [h[:2][::-1] for h in self.history]
 
     def get_bbox(self):
-        # box = self.bbox.copy()
-        box = self.kf.x[:4].copy()
+        box = self.bbox.copy()
         box[3] = box[3] * box[2]
         return box
