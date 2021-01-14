@@ -11,10 +11,15 @@ if len(sys.argv) != 2:
     print(f"USAGE: {sys.argv[0]} <path_to_video>")
     exit()
 
+import tensorflow as tf
+gpu = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpu[0], True)
+
 from model.detection_model.detection_model import DefaultDetectionModel
 from model.siamese.siamese_model import DefaultSiameseModel
 from model.tracker.default_tracker import DefaultTracker
 from model.tracker.simple_siamese_tracker import SimpleSiameseTracker
+from model.tracker.tracker import Tracker
 from model.tracker.default_tracker_with_path_correction import DefaultTrackerWithPathCorrection
 from model.model import Model
 from data.evaluator import Evaluator
@@ -39,6 +44,8 @@ names = [
     "Scott",
     "Frank",
 ]
+# model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
+# model = Model(DefaultDetectionModel(), DefaultSiameseModel(), Tracker(7))
 model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTrackerWithPathCorrection(names))
 
 evaluator = Evaluator(model, ["test.mp4"], ["data/tracking/01/pigs_tracking.json"])

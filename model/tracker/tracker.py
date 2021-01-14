@@ -1,18 +1,32 @@
+from model.tracker.kalman_track import KalmanTrack
 import numpy as np
 from abc import ABC
 from scipy.optimize import linear_sum_assignment
 
 from helpers.bb_helper import pre_process_boxes
 from model.tracker.track import Track
+from model.tracker.kalman_track import KalmanTrack
 from model.tracker.abstract_classes import AbstractTracker
 
 
 class Tracker(AbstractTracker):
-    def __init__(self, paths_num) -> None:
+    '''
+    Tracker that takes positions and appearances into account while tracking.
+    Has 2 variants:
+    - normal: uses euclidean distance
+    - deepsort: uses kalman filter and mahalanobis distance    
+    '''
+    def __init__(self, paths_num, appearance_weight=0.8, deepsort=False, max_mahalanobis_distance=9.4877, max_euclidean_distance=0.6) -> None:
         super().__init__()
-        self.appearance_weight = 0.8
+        self.appearance_weight = appearance_weight
         self.paths_num = paths_num
         self.reset_tracker()
+        if deepsort:
+            self.distance_cutoff = max_mahalanobis_distance
+            self.track_class = KalmanTrack
+        else:
+            self.distance_cutoff = max_euclidean_distance
+            self.track_class = Track
 
     def reset_tracker(self) -> None:
         """
@@ -36,7 +50,9 @@ class Tracker(AbstractTracker):
             Dict<object_id, List<(x,y)>>
             Object with list of positions for every tracking object
         """
-        return {track.track_id: np.array(track.get_history()) for track in self.tracks}
+        history = {track.track_id: np.array(track.get_history()) for track in self.tracks}
+        # print(history)
+        return history
 
     def similarity_matrix(self, new_bboxes, new_embeddings):
         matrix = np.empty((self.paths_num, new_embeddings.shape[0]))
@@ -76,14 +92,15 @@ class Tracker(AbstractTracker):
                 return None
 
             self.tracks = [
-                Track(boxes[i], embeddings[i], i + 1) for i in range(self.paths_num)
+                self.track_class(boxes[i], embeddings[i], i + 1) for i in range(self.paths_num)
             ]
 
-        for track in self.tracks:
-            track.predict()
+        if self.track_class==KalmanTrack:
+            for track in self.tracks:
+                track.predict()
 
-        # t_1 = 9.4877
-        t_1 = 8
+
+        t_1 = self.distance_cutoff
         t_2 = 0.3
         position_similarity_matrix = self.position_similarity_matrix(boxes)
         position_similarity_matrix[position_similarity_matrix > t_1] = t_1
