@@ -1,6 +1,4 @@
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import smart_resize
-
 
 def get_embeddings(image, boxes, model, size):
     boxes_tensors = []
@@ -16,7 +14,7 @@ def get_embeddings(image, boxes, model, size):
             int(height*image.shape[1]),
             int(width*image.shape[2])
         )
-        bb_image = smart_resize(
+        bb_image = tf.image.resize(
             bb_image,
             size=(size, size),
             interpolation='nearest'

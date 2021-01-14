@@ -44,18 +44,21 @@ names = [
     "Scott",
     "Frank",
 ]
-# model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
+model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
 # model = Model(DefaultDetectionModel(), DefaultSiameseModel(), Tracker(7))
-model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTrackerWithPathCorrection(names))
+# model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTrackerWithPathCorrection(names))
 
-evaluator = Evaluator(model, ["test.mp4"], ["data/tracking/01/pigs_tracking.json"])
+evaluator = Evaluator(model, ["PigTrackingDataset2020/videos/01_early_finisher_high_activity_day.mp4"], [
+                      "data/tracking/01/pigs_tracking.json"])
+
+# evaluator = Evaluator(model, ["test.mp4"], ["data/tracking/01/pigs_tracking.json"])
 scores, annotations, paths = evaluator.run_evaluation_for_video(
-    "test.mp4",
+    "PigTrackingDataset2020/videos/01_early_finisher_high_activity_day.mp4",
     "data/tracking/01/pigs_tracking.json",
     "tracking_only",
-    75,
+    0,
     compare_parts=True,
-    compare_part_interval=3
+    compare_part_interval=10
 )
 scores = extract_scores(scores, paths)
 
