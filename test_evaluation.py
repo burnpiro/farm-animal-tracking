@@ -15,6 +15,7 @@ from model.detection_model.detection_model import DefaultDetectionModel
 from model.siamese.siamese_model import DefaultSiameseModel
 from model.tracker.default_tracker import DefaultTracker
 from model.tracker.simple_siamese_tracker import SimpleSiameseTracker
+from model.tracker.default_tracker_with_path_correction import DefaultTrackerWithPathCorrection
 from model.model import Model
 from data.evaluator import Evaluator
 from helpers.score_processing import extract_scores, print_path_comparison
@@ -38,7 +39,7 @@ names = [
     "Scott",
     "Frank",
 ]
-model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
+model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTrackerWithPathCorrection(names))
 
 evaluator = Evaluator(model, ["test.mp4"], ["data/tracking/01/pigs_tracking.json"])
 scores, annotations, paths = evaluator.run_evaluation_for_video(
@@ -47,6 +48,7 @@ scores, annotations, paths = evaluator.run_evaluation_for_video(
     "tracking_only",
     75,
     compare_parts=True,
+    compare_part_interval=3
 )
 scores = extract_scores(scores, paths)
 
