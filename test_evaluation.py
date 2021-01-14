@@ -7,9 +7,9 @@ import codecs
 import numpy as np
 from tqdm import tqdm
 
-if len(sys.argv) != 2:
-    print(f"USAGE: {sys.argv[0]} <path_to_video>")
-    exit()
+# if len(sys.argv) != 2:
+#     print(f"USAGE: {sys.argv[0]} <path_to_video>")
+#     exit()
 
 import tensorflow as tf
 gpu = tf.config.experimental.list_physical_devices('GPU')
@@ -46,13 +46,14 @@ names = [
 model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
 # model = Model(DefaultDetectionModel(), DefaultSiameseModel(), Tracker(7))
 
-evaluator = Evaluator(model, ["test.mp4"], [
+evaluator = Evaluator(model, ["PigTrackingDataset2020/videos/01_early_finisher_high_activity_day.mp4"], [
                       "data/tracking/01/pigs_tracking.json"])
+
 scores, annotations, paths = evaluator.run_evaluation_for_video(
-    "test.mp4",
+    "PigTrackingDataset2020/videos/01_early_finisher_high_activity_day.mp4",
     "data/tracking/01/pigs_tracking.json",
     "tracking_only",
-    75,
+    0,
     compare_parts=True,
 )
 scores = extract_scores(scores, paths)
@@ -82,7 +83,7 @@ json.dump(
     separators=(",", ":"),
 )
 json.dump(
-    {k:v.tolist() for k,v in paths.items()},
+    paths,
     codecs.open(os.path.join(out_dir, "out.json"), "w", encoding="utf-8"),
     sort_keys=False,
     separators=(",", ":"),

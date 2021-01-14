@@ -40,8 +40,8 @@ def main(_argv):
     test_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
         preprocessing_function=preprocess)
     ds_generator = train_datagen.flow_from_directory(
-        'model/images/train', batch_size=16, target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), class_mode='sparse')
-    test_data = test_datagen.flow_from_directory('model/images/test', batch_size=16, target_size=(
+        'model/detection_model/images/train', batch_size=16, target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), class_mode='sparse')
+    test_data = test_datagen.flow_from_directory('model/detection_model/images/test', batch_size=16, target_size=(
         cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), shuffle=False, class_mode='sparse')
 
     # train_ds = ds_generator.get_dataset()
@@ -56,7 +56,7 @@ def main(_argv):
     model.compile(loss=loss_fun, optimizer=optimizer, metrics=['accuracy'])
 
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        WEIGHTS_DIR+"/classif-model-{epoch}_{loss:.4f}_{val_loss:.4f}.h5", monitor="val_loss", verbose=1,
+        WEIGHTS_DIR+"/classif-model-{epoch}_{loss:.4f}_{val_loss:.4f}_acc_{accuracy:.4f}.h5", monitor="accuracy", verbose=1,
         save_best_only=True,
         save_weights_only=True, mode="min"
     )

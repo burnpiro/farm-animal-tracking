@@ -73,24 +73,53 @@ class Model(AbstractModel):
 
         pbar = tqdm(total=num_of_frames)
 
+        BATCH_SIZE = 16
+        # frames_stacked = np.empty((BATCH_SIZE, 2688, 1520, 3))
+        frames = []
+
         while cap.isOpened():
             ret, frame = cap.read()
             i += 1
             pbar.update(1)
+
+            last_frame = (frame is None or not cap.isOpened())
+
             if frame is None:
-                break
+                frame = np.zeros(1)
 
             frame = frame.astype("uint8")
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            boxes = self.detection_model.predict(rgb_frame)
-            cropped_images = DefaultDetectionModel.crop_bb(rgb_frame, boxes)
-            embeddings = self.recognition_model.predict(cropped_images)
-            self.tracker.run(boxes, embeddings)
+            frames.append(rgb_frame) 
+            
+            if len(frames)!=BATCH_SIZE and not last_frame:
+                continue
 
-            if out_path is not None:
-                result = self.tracker.draw_tracked_objects(rgb_frame)
-                out.write(result)
+            if last_frame:
+                # remove last (empty) frame
+                frames.pop()
+
+            if len(frames)==0:
+                # no frames to process
+                break
+
+            try:
+                frames_stacked = np.stack(frames)
+            except:
+                print([f.shape for f in frames])
+                exit()
+            boxes = self.detection_model.predict(frames_stacked)
+
+            for i, frame in enumerate(frames):
+                cropped_images = DefaultDetectionModel.crop_bb(frame, boxes[i])
+                embeddings = self.recognition_model.predict(cropped_images)
+                self.tracker.run(boxes[i], embeddings)
+
+                if out_path is not None:
+                    result = self.tracker.draw_tracked_objects(frame)
+                    out.write(result)
+
+            frames.clear()
 
         if out_path is not None:
             out.release()

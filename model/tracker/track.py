@@ -38,7 +38,7 @@ class Track(AbstractTrack):
     def update(self, bbox):
         bbox = Track.bbox_to_xywa(bbox)
         self.bbox = bbox
-        self.history.append(self.bbox[:2].copy())
+        self.history.append(self.bbox[:2].tolist())
 
     def get_position_distance(self, new_bbox):
         bbox = self.bbox

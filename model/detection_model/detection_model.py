@@ -85,34 +85,37 @@ class DefaultDetectionModel(ABC):
         Returns: Dict<box, class>
             Dictionary with BB as keys
         """
+        single_image = image_np.ndim == 3
+        if single_image:
+            image_np = np.expand_dims(image_np, 0)
         input_tensor = tf.convert_to_tensor(
-            np.expand_dims(image_np, 0), dtype=tf.float32
+            image_np, dtype=tf.float32
         )
-        image_np_with_detections = image_np.copy()
+
         detections, predictions_dict, shapes = self.detect_fn(input_tensor)
 
-        keypoints, keypoint_scores = None, None
-        if "detection_keypoints" in detections:
-            keypoints = detections["detection_keypoints"][0].numpy()
-            keypoint_scores = detections["detection_keypoint_scores"][0].numpy()
+        boxes = []
 
-        boxes = get_bb(
-            image_np_with_detections,
-            detections["detection_boxes"][0].numpy(),
-            (detections["detection_classes"][0].numpy() + self.label_id_offset).astype(
-                int
-            ),
-            detections["detection_scores"][0].numpy(),
-            self.category_index,
-            use_normalized_coordinates=True,
-            max_boxes_to_draw=200,
-            min_score_thresh=0.50,
-            agnostic_mode=False,
-            keypoints=keypoints,
-            keypoint_scores=keypoint_scores,
-            keypoint_edges=get_keypoint_tuples(self.configs["eval_config"]),
-        )
-
+        for i in range(image_np.shape[0]):
+            boxes.append(get_bb(
+                image_np[i],
+                detections["detection_boxes"][i].numpy(),
+                (detections["detection_classes"][i].numpy() + self.label_id_offset).astype(
+                    int
+                ),
+                detections["detection_scores"][i].numpy(),
+                self.category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=200,
+                min_score_thresh=0.50,
+                agnostic_mode=False,
+                keypoints=None,
+                keypoint_scores=None,
+                keypoint_edges=get_keypoint_tuples(
+                    self.configs["eval_config"]),
+            ))
+        if single_image:
+            return boxes[0]
         return boxes
 
     @staticmethod
