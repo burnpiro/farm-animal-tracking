@@ -5,7 +5,7 @@ from absl import app, flags
 from absl.flags import FLAGS
 
 from data.data_generator import DataGenerator
-from model.siamese.model import create_model
+from model.siamese.model_generator import create_model
 from model.siamese.config import cfg
 
 flags.DEFINE_string('weights', f'{cfg.MODEL.WEIGHTS_PATH}siam-model-0.0012.h5',

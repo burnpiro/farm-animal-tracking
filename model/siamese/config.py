@@ -19,7 +19,7 @@ __C.MODEL.WEIGHTS_PATH = "weights/"
 
 # create Train options dict
 __C.TRAIN = EasyDict()
-__C.TRAIN.DATA_PATH = "./data/cropped_animals"
+__C.TRAIN.DATA_PATH = "./data/aug_data"
 __C.TRAIN.PATIENCE = 30  # for EarlyStopping
 __C.TRAIN.EPOCHS = 150
 __C.TRAIN.BATCH_SIZE = 32
