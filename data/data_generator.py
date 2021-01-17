@@ -40,6 +40,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         file_ext="jpg",
         debug=False,
         training=True,
+        exclude_aug=False,
+        step_size=1
     ):
         """
         Args:
@@ -53,7 +55,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.batch_size = cfg.TRAIN.BATCH_SIZE
         self.shuffle = True
         self.training = training
-        self.step_size = 5
+        self.step_size = step_size
 
         if not os.path.isdir(folder_path):
             print(
@@ -68,7 +70,10 @@ class DataGenerator(tf.keras.utils.Sequence):
 
             files = []
             for ext in file_ext:
-                files.extend(glob.glob(f"{class_dir.path}/*.{ext}"))
+                pattern = '*'
+                if exclude_aug:
+                    pattern = '*_*'
+                files.extend(glob.glob(f"{class_dir.path}/{pattern}.{ext}"))
             for i, file in enumerate(sorted(files)):
                 images.append((file, class_dir.name))
 
@@ -82,6 +87,24 @@ class DataGenerator(tf.keras.utils.Sequence):
 
     def __len__(self):
         return math.ceil(len(self.images) / cfg.TRAIN.BATCH_SIZE)
+
+    def add_dataset(self, dataset):
+        """
+
+        Args:
+            dataset: List[path, label]
+
+        Returns:
+
+        """
+        self.org_images = self.org_images + dataset
+        batched = self.batch_images()
+
+        self.images = pd.DataFrame(batched, columns=["path", "label"])
+        print(
+            f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
+        )
+
 
     def batch_images(self):
         images = self.org_images.copy()

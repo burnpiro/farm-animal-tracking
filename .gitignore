@@ -19,3 +19,4 @@ crop_images
 meta.tsv
 vecs.tsv
 /experiments/**/*
+**/*.h5
