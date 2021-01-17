@@ -57,6 +57,10 @@ Instead of running this script manually (requires ~30GB of RAM) you can use pre-
 $ python helpers/generate_siamese_emb_space.py
 ```
 
+Options:
+- `--datatype`: either `train` or `test` (default `train`), which data should be used for embeddings
+- `--weights`: string (default `siam-61_0.0633_0.0411.h5`), specify weights file from `mode/siamese/weights/MobileNetV2/` folder
+
 This is going to produce two files:
 
 - vecs.tsv - list of embeddings for test dataset
@@ -64,11 +68,13 @@ This is going to produce two files:
 
 You can visualize those embeddings in [https://projector.tensorflow.org/](https://projector.tensorflow.org/) application. Just upload them as a custom data (use `Load` option).
 
-![](assets/emb-space.png)
+[Average class values - Video](https://www.youtube.com/watch?v=6tjhW4eeVeM)
 
-[Average class values](https://www.youtube.com/watch?v=6tjhW4eeVeM)
-[Test day data](https://www.youtube.com/watch?v=cW8t12XKssk)
-[Train all data](https://www.youtube.com/watch?v=aI6wRRZhFks)
+[Test day data - Video](https://www.youtube.com/watch?v=cW8t12XKssk)
+
+[Train all data - Video](https://www.youtube.com/watch?v=aI6wRRZhFks)
+
+![](assets/emb-space.png)
 
 #### Generate tracking data
 
