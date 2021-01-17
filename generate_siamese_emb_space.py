@@ -15,6 +15,12 @@ flags.DEFINE_string(
     "weights name",
 )
 
+flags.DEFINE_string(
+    "datatype",
+    "train",
+    "weights name",
+)
+
 WEIGHTS_DIR = "model/siamese/weights"
 
 base_model = list(base_models.keys())[0]  # MobileNetV2
@@ -22,12 +28,14 @@ base_model = list(base_models.keys())[0]  # MobileNetV2
 
 def main(_argv):
     model = create_model()
+    if FLAGS.datatype != "train" and FLAGS.datatype != "test":
+        FLAGS.datatype = "train"
 
     model.load_weights(f"{WEIGHTS_DIR}/{base_model}/{FLAGS.weights}")
 
     ds_generator = DataGenerator(
         file_ext=["png", "jpg"],
-        folder_path="data/filter_aug/train",
+        folder_path=f"data/filter_aug/{FLAGS.datatype}",
         exclude_aug=True,
         step_size=15,
     )
@@ -37,8 +45,8 @@ def main(_argv):
     results = model.predict(dataset)
 
     # save pure results (embedding) and create meta mapping for each row (visualization files)
-    np.savetxt(f"vecs-test-{base_model}.tsv", results, delimiter="\t")
-    out_m = io.open(f"meta-test-{base_model}.tsv", "w", encoding="utf-8")
+    np.savetxt(f"vecs-{FLAGS.datatype}-{base_model}.tsv", results, delimiter="\t")
+    out_m = io.open(f"meta-{FLAGS.datatype}-{base_model}.tsv", "w", encoding="utf-8")
     for img, labels in tfds.as_numpy(dataset):
         [out_m.write(str(x) + "\n") for x in labels]
     out_m.close()
