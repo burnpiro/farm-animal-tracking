@@ -2,6 +2,7 @@ import glob
 import math
 import os
 import sys
+import random
 
 import numpy as np
 import pandas as pd
@@ -49,6 +50,10 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.images = None
         self.debug = debug
         self.data_path = folder_path
+        self.batch_size = cfg.TRAIN.BATCH_SIZE
+        self.shuffle = True
+        self.training = training
+        self.step_size = 5
 
         if not os.path.isdir(folder_path):
             print(
@@ -67,8 +72,21 @@ class DataGenerator(tf.keras.utils.Sequence):
             for i, file in enumerate(sorted(files)):
                 images.append((file, class_dir.name))
 
-        images = pd.DataFrame(images[::10], columns=["path", "label"])
-        print(images.describe())
+        self.org_images = images[::self.step_size]
+        batched = self.batch_images()
+
+        self.images = pd.DataFrame(batched, columns=["path", "label"])
+        print(
+            f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
+        )
+
+    def __len__(self):
+        return math.ceil(len(self.images) / cfg.TRAIN.BATCH_SIZE)
+
+    def batch_images(self):
+        images = self.org_images.copy()
+        random.shuffle(images)
+        images = pd.DataFrame(images, columns=["path", "label"])
         low_class_count = min(images["label"].value_counts())
         unique_classes = images["label"].unique()
 
@@ -91,13 +109,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         batched = batched.reshape(
             (batched.shape[0] * batched.shape[1], batched.shape[2])
         )
-        self.images = pd.DataFrame(batched, columns=["path", "label"])
-        print(
-            f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
-        )
-
-    def __len__(self):
-        return math.ceil(len(self.images) / cfg.TRAIN.BATCH_SIZE)
+        return batched
 
     @staticmethod
     def process_image(image_path, to_input=False):
@@ -159,6 +171,12 @@ class DataGenerator(tf.keras.utils.Sequence):
         ds = ds.batch(cfg.TRAIN.BATCH_SIZE)
         ds = ds.prefetch(buffer_size=cfg.TRAIN.BATCH_SIZE)
         return ds
+
+    def on_epoch_end(self):
+        if self.training:
+            batched = self.batch_images()
+
+            self.images = pd.DataFrame(batched, columns=["path", "label"])
 
     def __getitem__(self, item):
         images = self.images.loc[
