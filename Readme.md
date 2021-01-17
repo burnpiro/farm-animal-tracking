@@ -49,7 +49,9 @@ Make sure you have cropped dataset in `./data/cropped_animals` folder. Please ch
 $ python train_siamese.py
 ```
 
-#### Generate Embeddings for Test dataset an visualize it
+#### Generate Embeddings for Test dataset and visualize it
+
+Instead of running this script manually (requires ~30GB of RAM) you can use pre-generated train/test/concat files in `./data/visualization`. Just select two files with the same postfix, `vecs-$1.tsv` and `meta-$1.tsv`, it's important to use the same postfix, otherwise length won't match.
 
 ```
 $ python helpers/generate_siamese_emb_space.py
@@ -63,6 +65,10 @@ This is going to produce two files:
 You can visualize those embeddings in [https://projector.tensorflow.org/](https://projector.tensorflow.org/) application. Just upload them as a custom data (use `Load` option).
 
 ![](assets/emb-space.png)
+
+[Average class values](https://www.youtube.com/watch?v=6tjhW4eeVeM)
+[Test day data](https://www.youtube.com/watch?v=cW8t12XKssk)
+[Train all data](https://www.youtube.com/watch?v=aI6wRRZhFks)
 
 #### Generate tracking data
 
