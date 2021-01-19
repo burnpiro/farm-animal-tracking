@@ -21,6 +21,9 @@ class DefaultTrack(AbstractTrack):
     def update(self, bbox, embedding, **kwargs):
         self.history.append(bbox)
 
+    def update_with_prev_value(self):
+        self.update(self.history[-1], None)
+
     def has_history(self):
         """
         Checks if current track has any history

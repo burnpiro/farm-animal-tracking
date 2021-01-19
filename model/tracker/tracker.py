@@ -37,6 +37,10 @@ class Tracker(AbstractTracker):
         # self.tracks = [Track() for _ in range(paths_num)]
         self.tracks = None
 
+    def skip_empty_frame(self):
+        for track_id, track in enumerate(self.tracks):
+            track.update_with_prev_value()
+
     @staticmethod
     def boxes_to_xywh(boxes):
         wh = boxes[:, 2:] - boxes[:, :2]
@@ -79,7 +83,7 @@ class Tracker(AbstractTracker):
                 matrix[i, j] = self.tracks[i].get_similarity_distance(new_embeddings[j])
         return matrix
 
-    def run(self, boxes, embeddings):
+    def run(self, boxes, embeddings, **kwargs):
         boxes = pre_process_boxes(boxes)
         boxes = np.array(boxes)
         if boxes.shape[0] == 0:

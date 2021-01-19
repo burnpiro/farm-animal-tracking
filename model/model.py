@@ -82,7 +82,7 @@ class Model(AbstractModel):
             i += 1
             pbar.update(1)
 
-            last_frame = (frame is None or not cap.isOpened())
+            last_frame = frame is None or not cap.isOpened()
 
             if frame is None:
                 frame = np.zeros(1)
@@ -90,16 +90,16 @@ class Model(AbstractModel):
             frame = frame.astype("uint8")
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            frames.append(rgb_frame) 
-            
-            if len(frames)!=BATCH_SIZE and not last_frame:
+            frames.append(rgb_frame)
+
+            if len(frames) != BATCH_SIZE and not last_frame:
                 continue
 
             if last_frame:
                 # remove last (empty) frame
                 frames.pop()
 
-            if len(frames)==0:
+            if len(frames) == 0:
                 # no frames to process
                 break
 
@@ -110,10 +110,24 @@ class Model(AbstractModel):
                 exit()
             boxes = self.detection_model.predict(frames_stacked)
 
-            for i, frame in enumerate(frames):
-                cropped_images = DefaultDetectionModel.crop_bb(frame, boxes[i])
-                embeddings = self.recognition_model.predict(cropped_images)
-                self.tracker.run(boxes[i], embeddings)
+            for idx, frame in enumerate(frames):
+                try:
+                    cropped_images = DefaultDetectionModel.crop_bb(frame, boxes[idx])
+                    embeddings = self.recognition_model.predict(cropped_images)
+                except:
+                    print()
+                    print()
+                    print()
+                    print("There was an error while processing ")
+                    print(frame)
+                    print(f"frame id {i}")
+                    print()
+                    print()
+                    print()
+                    self.tracker.skip_empty_frame()
+                    continue
+
+                self.tracker.run(boxes[idx], embeddings)
 
                 if out_path is not None:
                     result = self.tracker.draw_tracked_objects(frame)

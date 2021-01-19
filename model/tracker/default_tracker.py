@@ -32,6 +32,10 @@ class DefaultTracker(AbstractTracker):
         """
         return {track.track_id: track.get_history() for track in self.tracks}
 
+    def skip_empty_frame(self):
+        for track_id, track in enumerate(self.tracks):
+            track.update_with_prev_value()
+
     def draw_tracked_objects(self, image_np: np.ndarray):
         result = image_np.copy()
         width = result.shape[1]

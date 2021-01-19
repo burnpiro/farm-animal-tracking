@@ -22,6 +22,9 @@ class SiameseTrack(DefaultTrack):
         self.prev_emb = embedding
         self.history.append(bbox)
 
+    def update_with_prev_value(self):
+        self.update(self.history[-1], self.prev_emb)
+
     def get_similarity_to_embedding(self, emb) -> float:
         """
         Calculates distance between given embedding and currently stored

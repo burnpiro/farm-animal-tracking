@@ -77,6 +77,9 @@ class KalmanTrack(AbstractTrack):
         # self.embeddings = [embedding]
         self.VI = None
 
+    def update_with_prev_value(self):
+        self.update(self.history[-1])
+
     @staticmethod
     def bbox_to_xywa(bbox):
         """
