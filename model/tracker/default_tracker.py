@@ -30,7 +30,7 @@ class DefaultTracker(AbstractTracker):
             Dict<object_id, List<(x,y)>>
             Object with list of positions for every tracking object
         """
-        return {track.track_id: track.get_history() for track in self.tracks}
+        return {track.track_id: list(track.get_history()) for track in self.tracks}
 
     def draw_tracked_objects(self, image_np: np.ndarray):
         result = image_np.copy()

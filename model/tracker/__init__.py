@@ -16,8 +16,7 @@ def get_embeddings(image, boxes, model, size):
         )
         bb_image = tf.image.resize(
             bb_image,
-            size=(size, size),
-            interpolation='nearest'
+            size=(size, size)
         )
         boxes_tensors.append(bb_image)
 

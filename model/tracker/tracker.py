@@ -16,6 +16,7 @@ class Tracker(AbstractTracker):
     - normal: uses euclidean distance
     - deepsort: uses kalman filter and mahalanobis distance    
     '''
+
     def __init__(self, paths_num, appearance_weight=0.8, deepsort=False, max_mahalanobis_distance=9.4877, max_euclidean_distance=0.6) -> None:
         super().__init__()
         self.appearance_weight = appearance_weight
@@ -50,7 +51,8 @@ class Tracker(AbstractTracker):
             Dict<object_id, List<(x,y)>>
             Object with list of positions for every tracking object
         """
-        history = {track.track_id: track.get_history() for track in self.tracks}
+        history = {track.track_id: track.get_history()
+                   for track in self.tracks}
         # print(history)
         return history
 
@@ -63,20 +65,29 @@ class Tracker(AbstractTracker):
                 )
         return matrix
 
-    def position_similarity_matrix(self, new_bboxes):
+    def position_similarity_matrix(self, new_bboxes, max_dist):
         matrix = np.empty((self.paths_num, new_bboxes.shape[0]))
         for i in range(matrix.shape[0]):
             for j in range(matrix.shape[1]):
-                matrix[i, j] = self.tracks[i].get_position_distance(
-                    new_bboxes[j],
-                )
+                if len(self.tracks[i].history)==0:
+                    # track was not initialized
+                    matrix[i, j] = max_dist
+                else:
+                    matrix[i, j] = self.tracks[i].get_position_distance(
+                        new_bboxes[j],
+                    )
         return matrix
 
-    def appearance_similarity_matrix(self, new_embeddings):
+    def appearance_similarity_matrix(self, new_embeddings, max_dist):
         matrix = np.empty((self.paths_num, new_embeddings.shape[0]))
         for i in range(matrix.shape[0]):
             for j in range(matrix.shape[1]):
-                matrix[i, j] = self.tracks[i].get_similarity_distance(new_embeddings[j])
+                if len(self.tracks[i].history)==0:
+                    # track was not initialized
+                    matrix[i, j] = max_dist
+                else:
+                    matrix[i, j] = self.tracks[i].get_similarity_distance(
+                        new_embeddings[j])
         return matrix
 
     def run(self, boxes, embeddings):
@@ -89,23 +100,28 @@ class Tracker(AbstractTracker):
 
         if self.tracks is None:
             if boxes.shape[0] < self.paths_num:
-                return None
+                self.tracks = [
+                    self.track_class(boxes[i], embeddings[i], i + 1) for i in range(boxes.shape[0])
+                ]
+                for i in range(boxes.shape[0], self.paths_num):
+                    self.track_class(track_id=i + 1)
+            else:
+                self.tracks = [
+                    self.track_class(boxes[i], embeddings[i], i + 1) for i in range(self.paths_num)
+                ]
 
-            self.tracks = [
-                self.track_class(boxes[i], embeddings[i], i + 1) for i in range(self.paths_num)
-            ]
-
-        if self.track_class==KalmanTrack:
+        if self.track_class == KalmanTrack:
             for track in self.tracks:
                 track.predict()
 
-
         t_1 = self.distance_cutoff
-        t_2 = 0.3
-        position_similarity_matrix = self.position_similarity_matrix(boxes)
+        # t_2 = 0.3
+        t_2 = 10
+        position_similarity_matrix = self.position_similarity_matrix(boxes, t_1)
         position_similarity_matrix[position_similarity_matrix > t_1] = t_1
 
-        appearance_similarity_matrix = self.appearance_similarity_matrix(embeddings)
+        appearance_similarity_matrix = self.appearance_similarity_matrix(
+            embeddings, t_2)
         appearance_similarity_matrix[appearance_similarity_matrix > t_2] = t_2
 
         admissible = np.logical_and(
@@ -119,7 +135,8 @@ class Tracker(AbstractTracker):
         rows, cols = linear_sum_assignment(similarity_matrix)
 
         for i, j in zip(rows, cols):
-            if not admissible[i, j]:
+            if not admissible[i, j] and len(self.tracks[i].history)>0:
+                # continue if track is initialized and not admissible
                 continue
             # self.tracks[i].embedding = embeddings[j]
             self.tracks[i].embeddings.append(embeddings[j])

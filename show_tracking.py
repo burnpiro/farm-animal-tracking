@@ -1,7 +1,7 @@
 import tensorflow as tf
 gpu = tf.config.experimental.list_physical_devices('GPU')
-# tf.config.experimental.set_memory_growth(gpu[0], True)
-tf.config.set_visible_devices([], 'GPU')
+tf.config.experimental.set_memory_growth(gpu[0], True)
+# tf.config.set_visible_devices([], 'GPU')
 
 import time
 from helpers.bb_helper import get_bb
@@ -109,7 +109,10 @@ def main(argv):
         i = 0
         frame_start = 0
 
-        tracker = Tracker(paths_num=FLAGS.num, appearance_weight=0)
+        # tracker = Tracker(paths_num=FLAGS.num, appearance_weight=0.5, max_euclidean_distance=10)
+        tracker = Tracker(paths_num=FLAGS.num, appearance_weight=0.9, max_mahalanobis_distance=10, deepsort=True)
+
+        out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'DIVX'), 5, WINDOW_SIZE)
 
         while(cap.isOpened()):
             frame_end = time.time()
@@ -160,13 +163,14 @@ def main(argv):
 
             cv2.imshow('frame', resized)
             # if out:
-            #     out.write(resized)
+            out.write(resized)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
         cap.release()
         # if out:
         #     out.release()
+        out.release()
         cv2.destroyAllWindows()
 
 

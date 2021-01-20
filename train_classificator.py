@@ -1,11 +1,14 @@
 import tensorflow as tf
 gpu = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpu[0], True)
-from tensorflow.keras.models import Model
-from absl import app
-from model.siamese.config import cfg
-import numpy as np
+
+from data.data_loader import DataLoader
 from model.siamese.classification_model import create_model
+import numpy as np
+from model.siamese.config import cfg
+from absl import app
+from tensorflow.keras.models import Model
+
 
 TRAINABLE = False
 
@@ -23,26 +26,26 @@ def preprocess(x):
 
 def main(_argv):
     model = create_model(trainable=TRAINABLE)
-    # model.load_weights('weights/siam-model-79_0.0665_0.6347.h5')
+    model.load_weights(
+        'model/weights/classif-model-1_1.6427_1.6386_acc_0.5618.h5')
 
     if TRAINABLE:
         model.load_weights(WEIGHTS)
 
     # ds_generator = DataGenerator()
     train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
-        # rotation_range=10,
-        # width_shift_range=0.9,
-        # height_shift_range=0.9,
-        # brightness_range=[0.5, 1],
         preprocessing_function=preprocess
     )
     # train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rotation_range=90, width_shift_range=0.9, height_shift_range=0.9, brightness_range=[0.5, 2], preprocessing_function=tf.keras.applications.mobilenet.preprocess_input)
     test_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
         preprocessing_function=preprocess)
     ds_generator = train_datagen.flow_from_directory(
-        'model/detection_model/images/train', batch_size=16, target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), class_mode='sparse')
-    test_data = test_datagen.flow_from_directory('model/detection_model/images/test', batch_size=16, target_size=(
+        'model/detection_model/images/augmented', batch_size=32, target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), class_mode='sparse')
+    test_data = test_datagen.flow_from_directory('model/detection_model/images/test', batch_size=32, target_size=(
         cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), shuffle=False, class_mode='sparse')
+
+    # ds_generator = DataLoader('model/detection_model/images/augmented', target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), batch_size=32, preprocessing_func=preprocess, classes=list(range(1, 17)))
+    # test_data = DataLoader('model/detection_model/images/test', target_size=(cfg.NN.INPUT_SIZE, cfg.NN.INPUT_SIZE), batch_size=32, preprocessing_func=preprocess, classes=list(range(1, 17)))
 
     # train_ds = ds_generator.get_dataset()
 
@@ -56,7 +59,7 @@ def main(_argv):
     model.compile(loss=loss_fun, optimizer=optimizer, metrics=['accuracy'])
 
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        WEIGHTS_DIR+"/classif-model-{epoch}_{loss:.4f}_{val_loss:.4f}_acc_{accuracy:.4f}.h5", monitor="accuracy", verbose=1,
+        WEIGHTS_DIR+"/classif-model-{epoch}_{loss:.4f}_{val_loss:.4f}_acc_{val_accuracy:.4f}.h5", monitor="val_accuracy", verbose=1,
         save_best_only=True,
         save_weights_only=True, mode="min"
     )
@@ -66,7 +69,10 @@ def main(_argv):
         epochs=200,
         callbacks=[checkpoint],
         verbose=1,
-        validation_data=test_data
+        validation_data=test_data,
+        initial_epoch=1,
+        # steps_per_epoch=ds_generator.STEPS_PER_EPOCH,
+        # validation_steps=test_data.STEPS_PER_EPOCH,
     )
 
     embeddings = []

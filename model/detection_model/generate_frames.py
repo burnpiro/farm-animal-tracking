@@ -11,14 +11,16 @@ mat_file = os.path.join(DATASET_DIR, 'LocationSelected.mat')
 labels_mat_file = os.path.join(DATASET_DIR, 'InitialLabels.mat')
 videos_dir = os.path.join(DATASET_DIR, 'videos')
 
+
 def clamp(x):
-    if x<0:
+    if x < 0:
         return 0
-    if x>1:
+    if x > 1:
         return 1
     return x
 
-def annotate(filename):    
+
+def annotate(filename):
     cap = cv2.VideoCapture(filename)
     index = int(os.path.basename(filename)[:2])-1
     mat = loadmat(mat_file)['LocationSelected'][0][index]
@@ -26,13 +28,19 @@ def annotate(filename):
 
     if not os.path.isdir(f'frames/{index+1:02d}'):
         os.mkdir(f'frames/{index+1:02d}')
-    
-    if not os.path.isdir(f'images/{index+1:02d}'):
-        os.mkdir(f'images/{index+1:02d}')
+
+    if not os.path.isdir(f'images/train'):
+        os.mkdir(f'images/train')
+    if not os.path.isdir(f'images/test'):
+        os.mkdir(f'images/test')
 
     for label in labels:
-        if not os.path.isdir(f'images/{index+1:02d}/{label}'):
-            os.mkdir(f'images/{index+1:02d}/{label}')
+        if not os.path.isdir(f'images/train/{label}'):
+            os.mkdir(f'images/train/{label}')
+
+    for label in labels:
+        if not os.path.isdir(f'images/test/{label}'):
+            os.mkdir(f'images/test/{label}')
 
     i = 0
     annotations = {}
@@ -40,9 +48,9 @@ def annotate(filename):
 
     while(cap.isOpened()):
         ret, frame = cap.read()
-        if frame is None:
+        if frame is None or frame.size == 0:
             frames_missing += 1
-            if frames_missing > 5:
+            if frames_missing > 10:
                 break
             else:
                 continue
@@ -50,7 +58,7 @@ def annotate(filename):
         if i >= mat.shape[1]:
             break
 
-        if i % 90 != 0:
+        if i % 10 != 0:
             i += 1
             continue
 
@@ -70,16 +78,20 @@ def annotate(filename):
             y1 = min([(pos3+v)[1], (pos3-v)[1], (pos4+v)[1], (pos4-v)[1]])
             y2 = max([(pos3+v)[1], (pos3-v)[1], (pos4+v)[1], (pos4-v)[1]])
 
-            aabbs.append((x1/frame.shape[1], y1/frame.shape[0], x2/frame.shape[1], y2/frame.shape[0]))
+            aabbs.append(
+                (x1/frame.shape[1], y1/frame.shape[0], x2/frame.shape[1], y2/frame.shape[0]))
 
-            cropped = frame[int(y1):int(y2),int(x1):int(x2)]
-            name = f'images/{index+1:02d}/{labels[j]}/{i:04d}.jpg'
+            cropped = frame[int(y1):int(y2), int(x1):int(x2)]
+            name = f'images/{"test" if i>6000 else "train"}/{labels[j]}/{index+1:02d}_{i:04d}.jpg'
             try:
                 cv2.imwrite(name, cropped)
-            except:
+            except Exception as e:
+                print(e)
                 pass
-            
-            
+
+        if i % 90 != 0:
+            i += 1
+            continue
 
         name = f'frames/{index+1:02d}/frame{i:04d}.jpg'
 
@@ -92,6 +104,7 @@ def annotate(filename):
         f.write(json.dumps(annotations))
 
     cap.release()
+
 
 if __name__ == '__main__':
     processes = []
@@ -109,5 +122,5 @@ if __name__ == '__main__':
             print(f'processing {os.path.join(videos_dir, entry)}')
             entires.append(os.path.join(videos_dir, entry))
     pool.map(annotate, entires)
-        
+
     cv2.destroyAllWindows()
