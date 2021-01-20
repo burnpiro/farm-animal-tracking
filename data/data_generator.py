@@ -105,7 +105,6 @@ class DataGenerator(tf.keras.utils.Sequence):
             f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
         )
 
-
     def batch_images(self):
         images = self.org_images.copy()
         random.shuffle(images)
