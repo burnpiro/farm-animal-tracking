@@ -16,7 +16,7 @@ docker-compose -f eda/docker-compose.yaml up
 
 ## Model
 
-1. To download precompiled model weights [Google Drive](https://drive.google.com/file/d/1OCkqrhT4LPlL4omqDQiw0_XzJ2J77F4n/view?usp=sharing)
+1. To download precompiled model weights [Google Drive](https://drive.google.com/file/d/19wD8VsuGlIeBKCbfmmVMBxePn8lCoZJm/view?usp=sharing)
 1. Copy zip file into `./` directory
 1. Run:
 
@@ -39,7 +39,7 @@ $ python run_detection.py
 
 ## Siamese network
 
-You can download current best weights from [Firestore](https://firebasestorage.googleapis.com/v0/b/fat-farm-animal-tracking.appspot.com/o/siam-model-0.0012.h5?alt=media&token=ba006953-81f2-4c4a-bdfb-02607df12d7e). Put them into `./model/siamese/weights` and use the path as `--weights` parameter.
+You can download current best weights from [Google Drive](https://drive.google.com/file/d/1xLoM4VRW7SeI99yzhJL6L92BFmO6kCUP/view?usp=sharing). Put them into `./model/siamese/weights` and use the path as `--weights` parameter.
 
 #### Training
 
@@ -91,13 +91,11 @@ This is going to produce tracking data from videos, so we can evaluate model. Lo
 You can specify the weights for the model. Please use weights marked with the lowest number (loss value).
 
 ```
-$ python test_siamese.py --source ./crop_images/5.jpg --target ./crop_images/1.jpg
+$ python test_siamese.py
 ```
 
 Options:
 ```
---source ./crop_images/5.jpg
---target ./crop_images/1.jpg
---weights siam-model-0.0012.h5
+--weights siam-118_0.0633.h5
 ```
 
