@@ -10,7 +10,7 @@ from model.siamese.model_generator import create_model, base_models
 
 TRAINABLE = False
 
-base_model = list(base_models.keys())[0]  # MobileNetV2
+base_model = list(base_models.keys())[2]  # MobileNetV2
 
 target = "./crop_images/1.jpg"
 source = "./crop_images/5.jpg"
@@ -21,7 +21,6 @@ WEIGHTS_DIR = "model/siamese/weights"
 
 def main(_argv):
     model = create_model(trainable=TRAINABLE, base_model=base_model)
-    # model.load_weights(f"weights/siamese/siam-{base_model}-91_0.0518_0.5930.h5")
     try:
         tf.keras.utils.plot_model(
             model,
@@ -41,13 +40,6 @@ def main(_argv):
         exclude_aug=True,
         step_size=4,
     )
-    test_data = DataGenerator(
-        training=False,
-        file_ext=["png", "jpg"],
-        folder_path="data/filter_aug/test",
-        step_size=4,
-    )
-    ds_generator.add_dataset(test_data.org_images)
 
     # train_ds = ds_generator.get_dataset()
 
@@ -59,8 +51,8 @@ def main(_argv):
     model.compile(loss=loss_fun, optimizer=optimizer, metrics=[])
 
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        WEIGHTS_DIR + "/" + base_model + "/siam-{epoch}_{loss:.4f}_{val_loss:.4f}.h5",
-        monitor="val_loss",
+        WEIGHTS_DIR + "/" + base_model + "/siam-{epoch}_{loss:.4f}.h5",
+        monitor="loss",
         verbose=1,
         save_best_only=True,
         save_weights_only=True,
@@ -79,8 +71,7 @@ def main(_argv):
         ds_generator,
         epochs=cfg.TRAIN.EPOCHS,
         callbacks=[tensorboard_callback, checkpoint],
-        verbose=1,
-        validation_data=test_data,
+        verbose=1
     )
 
 

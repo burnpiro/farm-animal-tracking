@@ -12,7 +12,7 @@ from data.siamese_evaluator import SiameseEvaluator
 
 flags.DEFINE_string(
     "weights",
-    "siam-61_0.0633_0.0411.h5",
+    "siam-118_0.0633.h5",
     "weights name",
 )
 

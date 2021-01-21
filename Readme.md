@@ -59,7 +59,7 @@ $ python helpers/generate_siamese_emb_space.py
 
 Options:
 - `--datatype`: either `train` or `test` (default `train`), which data should be used for embeddings
-- `--weights`: string (default `siam-61_0.0633_0.0411.h5`), specify weights file from `mode/siamese/weights/MobileNetV2/` folder
+- `--weights`: string (default `siam-118_0.0633.h5`), specify weights file from `mode/siamese/weights/MobileNetV2/` folder
 
 This is going to produce two files:
 
