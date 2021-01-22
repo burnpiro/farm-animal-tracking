@@ -15,6 +15,7 @@ import tensorflow as tf
 
 from model.detection_model.detection_model import DefaultDetectionModel
 from model.siamese.siamese_model import DefaultSiameseModel
+from model.siamese.classification_model import ClassificationModel
 from model.tracker.default_tracker import DefaultTracker
 from model.tracker.simple_siamese_tracker import SimpleSiameseTracker
 from model.tracker.tracker import Tracker

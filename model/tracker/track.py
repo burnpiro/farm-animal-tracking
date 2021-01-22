@@ -23,7 +23,7 @@ class Track(AbstractTrack):
         self.embedding = embedding
         self.track_id = track_id
         self.bbox = self.bbox_to_xywa(bbox)
-        self.history = [] if bbox is None else [bbox]
+        self.history = [] if bbox is None else [bbox.tolist()]
         self.embeddings = deque([embedding], maxlen=10)
 
     @staticmethod
