@@ -39,7 +39,7 @@ $ python run_detection.py
 
 ## Siamese network
 
-You can download current best weights from [Google Drive](https://drive.google.com/file/d/1xLoM4VRW7SeI99yzhJL6L92BFmO6kCUP/view?usp=sharing). Put them into `./model/siamese/weights` and use the path as `--weights` parameter.
+You can download current best weights from [Google Drive MobileNetV2](https://drive.google.com/file/d/1-HGENW0g-ZvfeWzfemLMPf1Eg9RFuceW/view?usp=sharing) [Google Drive EfficientNetB5](https://drive.google.com/file/d/1hMCxGOLqZlchUaSSl0UbAD4rbfJ_YFpQ/view?usp=sharing). Put them into `./model/siamese/weights` and use the path as `--weights` parameter.
 
 #### Training
 
