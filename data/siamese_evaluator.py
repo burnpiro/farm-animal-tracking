@@ -99,6 +99,6 @@ class SiameseEvaluator:
         y_true = [int(i[0]) for i in predictions]
         y_pred = [int(i[1]) for i in predictions]
         conf_matrix = confusion_matrix(y_true, y_pred)
-        clas_report = classification_report(y_true, y_pred, target_names=names)
+        class_report = classification_report(y_true, y_pred, target_names=names, output_dict=True)
 
-        return conf_matrix, clas_report
+        return conf_matrix, class_report

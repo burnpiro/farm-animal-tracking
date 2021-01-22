@@ -11,7 +11,7 @@ from model.siamese.config import cfg
 
 flags.DEFINE_string(
     "weights",
-    "siam-118_0.0633.h5",
+    "siam-108-0.001-5layer_0.9683.h5",
     "weights name",
 )
 
@@ -23,11 +23,11 @@ flags.DEFINE_string(
 
 WEIGHTS_DIR = "model/siamese/weights"
 
-base_model = list(base_models.keys())[0]  # MobileNetV2
+base_model = list(base_models.keys())[2]  # MobileNetV2
 
 
 def main(_argv):
-    model = create_model()
+    model = create_model(base_model=base_model)
     if FLAGS.datatype != "train" and FLAGS.datatype != "test":
         FLAGS.datatype = "train"
 

@@ -8,19 +8,16 @@ from data.data_generator import DataGenerator
 from model.siamese.config import cfg
 from model.siamese.model_generator import create_model, base_models
 
-TRAINABLE = False
+TRAINABLE = True
 
 base_model = list(base_models.keys())[2]  # MobileNetV2
 
-target = "./crop_images/1.jpg"
-source = "./crop_images/5.jpg"
-
-WEIGHTS = "siam-model-0.55.h5"
 WEIGHTS_DIR = "model/siamese/weights"
 
 
 def main(_argv):
     model = create_model(trainable=TRAINABLE, base_model=base_model)
+    prefix = "5layer"
     try:
         tf.keras.utils.plot_model(
             model,
@@ -30,9 +27,6 @@ def main(_argv):
         )
     except ImportError as e:
         print(f"Failed to plot keras model: {e}")
-
-    if TRAINABLE:
-        model.load_weights(WEIGHTS)
 
     ds_generator = DataGenerator(
         file_ext=["png", "jpg"],
@@ -51,7 +45,7 @@ def main(_argv):
     model.compile(loss=loss_fun, optimizer=optimizer, metrics=[])
 
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        WEIGHTS_DIR + "/" + base_model + "/siam-{epoch}_{loss:.4f}.h5",
+        WEIGHTS_DIR + "/" + base_model + "/siam-{epoch}-"+str(learning_rate)+"-"+str(prefix)+"_{loss:.4f}.h5",
         monitor="loss",
         verbose=1,
         save_best_only=True,

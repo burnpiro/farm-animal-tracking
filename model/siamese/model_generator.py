@@ -40,7 +40,7 @@ def create_model(trainable=False, base_model="MobileNetV2"):
     if base_model == list(base_models.keys())[1]:
         x = base.get_layer("block_10_project_BN").output
     if base_model == list(base_models.keys())[2]:
-        x = base.get_layer("top_conv").output
+        x = base.get_layer("block5g_add").output
     input = base.input
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dropout(0.5)(x)
