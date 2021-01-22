@@ -24,7 +24,7 @@ class KalmanTrack(AbstractTrack):
         # self.bbox = self.bbox_to_xywa(bbox)
         self.embedding = embedding
         self.track_id = track_id
-        self.history = [] if bbox is None else [bbox]
+        self.history = [] if bbox is None else [bbox.tolist()]
 
         self.embeddings = deque([embedding], maxlen=10)
         self.kf = KalmanFilter(dim_x=8, dim_z=4)
@@ -102,7 +102,7 @@ class KalmanTrack(AbstractTrack):
     def predict(self):
         self.kf.predict()
         self.VI = np.linalg.inv(self.kf.P[:4, :4])
-        self.history.append(self.kf.x[:2].copy())
+        self.history.append(self.kf.x[:2].tolist())
 
     def update(self, bbox):
         bbox = KalmanTrack.bbox_to_xywa(bbox)
