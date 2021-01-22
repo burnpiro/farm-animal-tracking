@@ -23,6 +23,14 @@ class AbstractTrack(ABC):
         pass
 
     @abstractmethod
+    def update_with_prev_value(self) -> None:
+        """
+        Adds previous value to history in case some frames have to be skipped
+        Returns: None
+        """
+        pass
+
+    @abstractmethod
     def get_history(self) -> list:
         """
         Parses Track history into list of positions over time
@@ -46,6 +54,15 @@ class AbstractTracker(ABC):
         Returns list of positions per every tracked object
         Returns:
             Dict<object_id, List<x,y>>
+        """
+        pass
+
+    @abstractmethod
+    def skip_empty_frame(self) -> None:
+        """
+        Adds empty track value (updates with previous value) for every track
+        used when there is a corrupted frame
+        Returns: None
         """
         pass
 

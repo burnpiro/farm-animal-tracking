@@ -53,30 +53,81 @@ class Evaluator:
         return sum_dist
 
     @staticmethod
-    def compare_path_parts(annotation, path, interval=10):
+    def compare_path_parts(annotations, paths, interval=10, video_frame_offset=0, eval_type="tracking_only"):
         """
         Sums total distance between positions in each frame
         Args:
-            annotation: List<x,y,frame_id>
-            path: List<x,y>
+            annotations: Dict[class_id, List<x,y,frame_id>]
+            paths: Dict[class_id, List<x,y>]
             interval: int - number of frames to be used as a part of a comparison
+            video_frame_offset: int - offset for video
+            eval_type: string - "all" or "tracking_only" (should include recognition in tracking)
 
-        Returns: {
+        Returns: Dict[class_id, {
             "intervals": int,
             "parts": List<float>
-        }
-            Errors per interval
+        }]
+            Errors per interval, per class
         """
-        scores = {"interval": interval, "parts": []}
-        for i in range(0, len(annotation), interval):
-            sum_dist = 0.0
-            if i + interval >= len(path):
-                break
-            for frame_id in range(i, i + interval):
-                sum_dist += euclidean(annotation[frame_id][:2], path[frame_id])
 
-            scores["parts"].append(sum_dist / interval)
+        first_ann = list(annotations.values())[0]
+        scores = {}
+        for i in range(0, len(first_ann), interval):
+            if i >= len(list(paths.values())[0]):
+                break
+            mapped_paths_with_offset = Evaluator.map_paths_to_closest(paths, annotations, compare_specific_position=i)
+            for object_id, ann_path in annotations.items():
+                if object_id not in scores:
+                    scores[object_id] = {"interval": interval, "parts": []}
+                sum_dist = 0.0
+                last_num = 0
+                for frame_id in range(i, i + interval):
+                    if frame_id >= len(mapped_paths_with_offset[object_id]):
+                        break
+                    last_num += 1
+                    sum_dist += euclidean(ann_path[video_frame_offset+frame_id][:2], mapped_paths_with_offset[object_id][frame_id])
+
+                scores[object_id]["parts"].append(sum_dist / last_num)
         return scores
+
+    @staticmethod
+    def map_paths_to_closest(paths, annotations, compare_specific_position=0):
+        """
+
+        Args:
+            paths: List[x,y] - list of x,y position
+            annotations: List[x,y,c] - list of x,y position and class id
+            compare_specific_position: int - compare paths in given position
+
+        Returns:
+
+        """
+        path_mapping = {}
+        assigned_paths = []
+        for annotation_id, ann_path in annotations.items():
+            distances = {}
+            for path_id, path in paths.items():
+                distances[path_id] = euclidean(path[compare_specific_position], ann_path[compare_specific_position][:2])
+
+            loop = 1
+            # print(min(distances.items(), key=operator.itemgetter(1)))
+            closest_path_idx = min(distances.items(), key=operator.itemgetter(1))[0]
+
+            distances = list(distances.items())
+            distances.sort(key=operator.itemgetter(1))
+
+            while closest_path_idx in assigned_paths:
+                closest_path_idx = distances[loop][0]
+                loop += 1
+
+            path_mapping[annotation_id] = closest_path_idx
+            assigned_paths.append(closest_path_idx)
+
+        new_paths = {}
+        for ann_id, track_id in path_mapping.items():
+            new_paths[ann_id] = paths[track_id]
+
+        return new_paths
 
     def run_evaluation_for_video(
         self,
@@ -113,32 +164,7 @@ class Evaluator:
         # print(paths)
 
         if eval_type == "tracking_only":
-            path_mapping = {}
-            assigned_paths = []
-            for annotation_id, ann_path in annotations.items():
-                distances = {}
-                for path_id, path in paths.items():
-                    distances[path_id] = euclidean(path[0], ann_path[0][:2])
-
-                loop = 1
-                # print(min(distances.items(), key=operator.itemgetter(1)))
-                closest_path_idx = min(distances.items(), key=operator.itemgetter(1))[0]
-
-                distances = list(distances.items())
-                distances.sort(key=operator.itemgetter(1))
-
-                while closest_path_idx in assigned_paths:
-                    closest_path_idx = distances[loop][0]
-                    loop += 1
-
-                path_mapping[annotation_id] = closest_path_idx
-                assigned_paths.append(closest_path_idx)
-
-            new_paths = {}
-            for ann_id, track_id in path_mapping.items():
-                new_paths[ann_id] = paths[track_id]
-            paths = new_paths
-            del new_paths
+            paths = Evaluator.map_paths_to_closest(paths, annotations, compare_specific_position=0)
 
         scores = {}
         for object_id, annotation in annotations.items():
@@ -147,12 +173,17 @@ class Evaluator:
             scores[object_id]["total"] = Evaluator.compare_paths(
                 annotation[video_frame_offset:], paths[object_id]
             )
-            if compare_parts:
-                scores[object_id]["intervals"] = Evaluator.compare_path_parts(
-                    annotation[video_frame_offset:],
-                    paths[object_id],
-                    compare_part_interval,
-                )
+
+        if compare_parts:
+            interval_scores = Evaluator.compare_path_parts(
+                annotations,
+                paths,
+                compare_part_interval,
+                video_frame_offset=video_frame_offset,
+                eval_type=eval_type
+            )
+            for object_id, interval_score in interval_scores.items():
+                scores[object_id]["intervals"] = interval_score
 
         return scores, annotations, paths
 

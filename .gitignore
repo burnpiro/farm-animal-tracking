@@ -11,7 +11,12 @@ PigTrackingDataset2019
 __pycache__
 logs
 data/tracking
+data/aug_data
+data/**/*.png
+data/**/*.jpg
+data/**/*.jpeg
 crop_images
 meta.tsv
 vecs.tsv
 /experiments/**/*
+**/*.h5

@@ -2,38 +2,32 @@ import glob
 import math
 import os
 import sys
+import random
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tqdm import tqdm
+from model.siamese.config import cfg
 
 tqdm.pandas()
-
-from model.siamese.config import cfg
 
 """
 Files have to be stored in a structure:
 
 main_folder/
     1/
-        1/
-            0030.jpg
-            1080.jpg
-            ...
-        2/
-            2400.jpg
-            ...
+        0030.jpg
+        1080.jpg
+        ...
     2/
-        2/
-            5230.jpg
-            ...
-        14/
-            8800.jpg
-            ...
+        2400.jpg
+        ...
+    14/
+        8800.jpg
+        ...
             
-This structure is going to extract images for 3 classes [1,2,14] from 2 videos [1,2]. 
-Class present in more than one video will be combined into one (like class "2" in the example)
+This structure is going to extract images for 3 classes [1,2,14]. 
 """
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -46,16 +40,22 @@ class DataGenerator(tf.keras.utils.Sequence):
         file_ext="jpg",
         debug=False,
         training=True,
+        exclude_aug=False,
+        step_size=1
     ):
         """
         Args:
             folder_path: string ## Path to folder with video frames
-            file_ext: string (optional) looking for files with this extension
+            file_ext: string | List[str] (optional) looking for files with this extension
             debug: boolean (optional) should generator display any warnings?
         """
         self.images = None
         self.debug = debug
         self.data_path = folder_path
+        self.batch_size = cfg.TRAIN.BATCH_SIZE
+        self.shuffle = True
+        self.training = training
+        self.step_size = step_size
 
         if not os.path.isdir(folder_path):
             print(
@@ -64,16 +64,50 @@ class DataGenerator(tf.keras.utils.Sequence):
             sys.exit()
 
         images = []
-        for video_dir in os.scandir(folder_path):
-            for class_dir in os.scandir(video_dir.path):
-                for i, file in enumerate(glob.glob(f"{class_dir.path}/*.{file_ext}")):
-                    # For train set it to "i%5 == 1"
-                    isTestData = int(os.path.basename(file)[:-4]) > 6000
-                    if (training and isTestData) or (not training and not isTestData):
-                        continue
+        for class_dir in os.scandir(folder_path):
+            if type(file_ext) is str:
+                file_ext = [file_ext]
 
-                    images.append((file, class_dir.name))
+            files = []
+            for ext in file_ext:
+                pattern = '*'
+                if exclude_aug:
+                    pattern = '*_*'
+                files.extend(glob.glob(f"{class_dir.path}/{pattern}.{ext}"))
+            for i, file in enumerate(sorted(files)):
+                images.append((file, class_dir.name))
 
+        self.org_images = images[::self.step_size]
+        batched = self.batch_images()
+
+        self.images = pd.DataFrame(batched, columns=["path", "label"])
+        print(
+            f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
+        )
+
+    def __len__(self):
+        return math.ceil(len(self.images) / cfg.TRAIN.BATCH_SIZE)
+
+    def add_dataset(self, dataset):
+        """
+
+        Args:
+            dataset: List[path, label]
+
+        Returns:
+
+        """
+        self.org_images = self.org_images + dataset
+        batched = self.batch_images()
+
+        self.images = pd.DataFrame(batched, columns=["path", "label"])
+        print(
+            f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
+        )
+
+    def batch_images(self):
+        images = self.org_images.copy()
+        random.shuffle(images)
         images = pd.DataFrame(images, columns=["path", "label"])
         low_class_count = min(images["label"].value_counts())
         unique_classes = images["label"].unique()
@@ -97,13 +131,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         batched = batched.reshape(
             (batched.shape[0] * batched.shape[1], batched.shape[2])
         )
-        self.images = pd.DataFrame(batched, columns=["path", "label"])
-        print(
-            f'Found {len(self.images)} files for {len(self.images["label"].unique())} unique classes'
-        )
-
-    def __len__(self):
-        return math.ceil(len(self.images) / cfg.TRAIN.BATCH_SIZE)
+        return batched
 
     @staticmethod
     def process_image(image_path, to_input=False):
@@ -165,6 +193,12 @@ class DataGenerator(tf.keras.utils.Sequence):
         ds = ds.batch(cfg.TRAIN.BATCH_SIZE)
         ds = ds.prefetch(buffer_size=cfg.TRAIN.BATCH_SIZE)
         return ds
+
+    def on_epoch_end(self):
+        if self.training:
+            batched = self.batch_images()
+
+            self.images = pd.DataFrame(batched, columns=["path", "label"])
 
     def __getitem__(self, item):
         images = self.images.loc[

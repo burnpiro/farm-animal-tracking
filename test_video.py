@@ -32,9 +32,9 @@ names = [
     'Scott',
     'Frank'
 ]
-model = Model(DefaultDetectionModel(), DefaultSiameseModel(), SimpleSiameseTracker(names))
+model = Model(DefaultDetectionModel(), DefaultSiameseModel(), DefaultTracker(names))
 
-paths = model.predict_video(sys.argv[1], out_path="test_track.mp4")
+paths = model.predict_video(sys.argv[1], out_path="test_track_default.mp4")
 
 # print(paths)
 #

@@ -35,7 +35,10 @@ class Track(AbstractTrack):
         box[3] = bbox[3] / bbox[2]
         return box
 
-    def update(self, bbox):
+    def update_with_prev_value(self):
+        self.update(self.bbox, None)
+
+    def update(self, bbox, embedding, **kwargs):
         bbox = Track.bbox_to_xywa(bbox)
         self.bbox = bbox
         self.history.append(self.bbox[:2].tolist())
