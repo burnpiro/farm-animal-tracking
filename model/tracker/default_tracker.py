@@ -67,10 +67,11 @@ class DefaultTracker(AbstractTracker):
 
         return result
 
-    def run(self, boxes, embeddings):
+    def run(self, boxes, embeddings, **kwargs):
         """
         Runs tracking for current list of boxes, this is based only on proximity of the previous bboxes
         Args:
+            **kwargs:
             embeddings: List of embeddings for cropped bboxes
             boxes: Dict<bbox: class_name>
 

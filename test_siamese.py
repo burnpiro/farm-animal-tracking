@@ -82,7 +82,7 @@ def main(_argv):
     evaluator.set_avg_vectors(FLAGS.vectors, FLAGS.meta)
     conf_matrix, class_report = evaluator.run_evaluation(compare_type="individual")
     print(conf_matrix)
-    cm_analysis(conf_matrix, names, filename=os.path.join(out_dir, f"conf_matrix_{base_model}.jpg"))
+    cm_analysis(conf_matrix, names, filename=os.path.join(out_dir, f"conf_matrix_{base_model}.png"))
     print(class_report)
     classification_report_latex(class_report, filename=os.path.join(out_dir, f"class_report_{base_model}.txt"))
 

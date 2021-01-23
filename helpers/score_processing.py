@@ -102,9 +102,9 @@ def cm_analysis(cm, labels, figsize=(30,30), filename="conf_matrix.png"):
             p = cm_perc[i, j]
             if i == j:
                 s = cm_sum[i]
-                annot[i, j] = '%.1f%%\n%d/%d' % (p, c, s)
+                annot[i, j] = '%.1f%%\n%d' % (p, c)
             elif c == 0:
-                annot[i, j] = ''
+                annot[i, j] = '0'
             else:
                 annot[i, j] = '%.1f%%\n%d' % (p, c)
     cm = pd.DataFrame(cm, index=labels, columns=labels)
