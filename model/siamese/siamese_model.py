@@ -52,7 +52,8 @@ class DefaultSiameseModel(ABC):
         )
 
         boxes_tensors = tf.stack(images)
-        siamese_predictions = self.siamese_net(boxes_tensors).numpy()
+        boxes_tensors = tf.keras.applications.mobilenet_v2.preprocess_input(boxes_tensors)
+        siamese_predictions = self.siamese_net.predict(boxes_tensors)
 
         return siamese_predictions
 

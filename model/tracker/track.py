@@ -22,9 +22,9 @@ class Track(AbstractTrack):
     def initialize_track(self, bbox=None, embedding=None, track_id=None) -> None:
         self.embedding = embedding
         self.track_id = track_id
-        self.bbox = self.bbox_to_xywa(bbox)
-        self.history = [] if bbox is None else [bbox.tolist()]
-        self.embeddings = deque([embedding], maxlen=10)
+        self.bbox = self.bbox_to_xywa(bbox) if self.bbox else np.array([0, 0, 0, 1])
+        self.history = [bbox.tolist()]
+        self.embeddings = deque(maxlen=50) if embedding is None else deque([embedding], maxlen=50)
 
     @staticmethod
     def bbox_to_xywa(bbox):
@@ -38,7 +38,7 @@ class Track(AbstractTrack):
     def update_with_prev_value(self):
         self.update(self.bbox, None)
 
-    def update(self, bbox, embedding, **kwargs):
+    def update(self, bbox, **kwargs):
         bbox = Track.bbox_to_xywa(bbox)
         self.bbox = bbox
         self.history.append(self.bbox[:2].tolist())
@@ -55,7 +55,7 @@ class Track(AbstractTrack):
         return (1 - similarity_coeff) * pos_dist + similarity_coeff * sim_dist
 
     def get_similarity_distance(self, new_embedding):
-        return np.min(
+        return np.mean(
             [cosine(embedding, new_embedding) for embedding in self.embeddings]
         )
 

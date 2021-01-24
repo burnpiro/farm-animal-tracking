@@ -17,8 +17,9 @@ class Tracker(AbstractTracker):
     - deepsort: uses kalman filter and mahalanobis distance    
     '''
 
-    def __init__(self, paths_num, appearance_weight=0.8, deepsort=False, max_mahalanobis_distance=9.4877, max_euclidean_distance=0.6) -> None:
+    def __init__(self, paths_num, appearance_weight=0.4, deepsort=True, max_mahalanobis_distance=9.4877, max_euclidean_distance=10) -> None:
         super().__init__()
+        self.steps = 0
         self.appearance_weight = appearance_weight
         self.paths_num = paths_num
         self.reset_tracker()
@@ -36,6 +37,7 @@ class Tracker(AbstractTracker):
 
         """
         # self.tracks = [Track() for _ in range(paths_num)]
+        self.steps = 0
         self.tracks = None
 
     def skip_empty_frame(self):
@@ -76,7 +78,7 @@ class Tracker(AbstractTracker):
         matrix = np.empty((self.paths_num, new_bboxes.shape[0]))
         for i in range(matrix.shape[0]):
             for j in range(matrix.shape[1]):
-                if len(self.tracks[i].history)==0:
+                if len(self.tracks[i].history) == 0:
                     # track was not initialized
                     matrix[i, j] = max_dist
                 else:
@@ -89,7 +91,7 @@ class Tracker(AbstractTracker):
         matrix = np.empty((self.paths_num, new_embeddings.shape[0]))
         for i in range(matrix.shape[0]):
             for j in range(matrix.shape[1]):
-                if len(self.tracks[i].history)==0:
+                if len(self.tracks[i].history) == 0:
                     # track was not initialized
                     matrix[i, j] = max_dist
                 else:
@@ -124,12 +126,19 @@ class Tracker(AbstractTracker):
         t_1 = self.distance_cutoff
         # t_2 = 0.3
         t_2 = 10
-        position_similarity_matrix = self.position_similarity_matrix(boxes, t_1)
+        position_similarity_matrix = self.position_similarity_matrix(
+            boxes, t_1)
         position_similarity_matrix[position_similarity_matrix > t_1] = t_1
 
-        appearance_similarity_matrix = self.appearance_similarity_matrix(
-            embeddings, t_2)
-        appearance_similarity_matrix[appearance_similarity_matrix > t_2] = t_2
+        if self.steps < 10:
+            appearance_similarity_matrix = np.zeros_like(
+                position_similarity_matrix)
+        else:
+            appearance_similarity_matrix = self.appearance_similarity_matrix(
+                embeddings, t_2)
+            appearance_similarity_matrix[appearance_similarity_matrix > t_2] = t_2
+
+        self.steps += 1
 
         admissible = np.logical_and(
             position_similarity_matrix < t_1, appearance_similarity_matrix < t_2
@@ -142,7 +151,7 @@ class Tracker(AbstractTracker):
         rows, cols = linear_sum_assignment(similarity_matrix)
 
         for i, j in zip(rows, cols):
-            if not admissible[i, j] and len(self.tracks[i].history)>0:
+            if not admissible[i, j] and len(self.tracks[i].history) > 0:
                 # continue if track is initialized and not admissible
                 continue
             # self.tracks[i].embedding = embeddings[j]

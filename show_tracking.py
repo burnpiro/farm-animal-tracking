@@ -18,11 +18,12 @@ import cv2
 import os
 
 from model.tracker.tracker import Tracker
+from model.siamese.siamese_model import DefaultSiameseModel
 from model.tracker import get_embeddings
 
-flags.DEFINE_string('weights', f'{cfg.MODEL.WEIGHTS_PATH}siam-model-91_0.0518_0.5930.h5',
-                    'path to weights file')
-flags.DEFINE_integer('num', '7',
+# flags.DEFINE_string('weights', f'{cfg.MODEL.WEIGHTS_PATH}siam-model-91_0.0518_0.5930.h5',
+#                     'path to weights file')
+flags.DEFINE_integer('num', '16',
                      'number of objects to track')
 flags.DEFINE_string('video', '.',
                     'path to video')
@@ -99,10 +100,10 @@ def main(argv):
         label_map_dict = label_map_util.get_label_map_dict(
             label_map, use_display_name=True)
 
-        siamese_net = create_model()
-        siamese_net.load_weights(FLAGS.weights)
+        # siamese_net = create_model()
+        # siamese_net.load_weights(FLAGS.weights)
 
-        siamese_net = create_embedding_model(siamese_net)
+        # siamese_net = create_embedding_model(siamese_net)
 
         cap = cv2.VideoCapture(FLAGS.video)
 
@@ -110,7 +111,12 @@ def main(argv):
         frame_start = 0
 
         # tracker = Tracker(paths_num=FLAGS.num, appearance_weight=0.5, max_euclidean_distance=10)
-        tracker = Tracker(paths_num=FLAGS.num, appearance_weight=0.9, max_mahalanobis_distance=10, deepsort=True)
+        tracker = Tracker(paths_num=FLAGS.num)
+        weights_dir = os.path.join(
+            "model/siamese/weights", "MobileNetV2", "siam-118-0.0001-1.0a_0.0633.h5"
+        )
+        base_model = 'MobileNetV2'
+        siamese_obj = DefaultSiameseModel(weights_path=weights_dir, base_model=base_model)
 
         out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'DIVX'), 5, WINDOW_SIZE)
 
@@ -148,7 +154,25 @@ def main(argv):
                 keypoint_scores=None,
                 keypoint_edges=get_keypoint_tuples(configs['eval_config']))
 
-            embeddings = get_embeddings(input_tensor, list(boxes.keys()), siamese_net, cfg.NN.INPUT_SIZE)
+
+            boxes_tensors = []
+            for box in boxes:
+                x1, y1, x2, y2 = box
+                width = x2-x1
+                height = y2-y1
+
+                [bb_image] = tf.image.crop_to_bounding_box(
+                    input_tensor,
+                    int(y1*input_tensor.shape[1]),
+                    int(x1*input_tensor.shape[2]),
+                    int(height*input_tensor.shape[1]),
+                    int(width*input_tensor.shape[2])
+                )
+
+                boxes_tensors.append(bb_image)
+
+            embeddings = siamese_obj.predict(boxes_tensors)
+            # embeddings = get_embeddings(input_tensor, list(boxes.keys()), siamese_net, cfg.NN.INPUT_SIZE)
             tracker.run(boxes, embeddings)
             history = tracker.get_history()
             

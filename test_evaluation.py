@@ -6,12 +6,9 @@ import json
 import codecs
 import numpy as np
 from tqdm import tqdm
-
-if len(sys.argv) != 2:
-    print(f"USAGE: {sys.argv[0]} <path_to_video>")
-    exit()
-
 import tensorflow as tf
+gpu = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpu[0], True)
 
 from model.siamese.model_generator import base_models
 from model.detection_model.detection_model import DefaultDetectionModel
@@ -73,20 +70,20 @@ base_model = list(base_models.keys())[0]  # MobileNetV2
 
 videos_paths = [
     "11_nursery_high_activity_day-cropped.mp4",
-    "12_nursery_low_activity_day-cropped.mp4",
-    "13_nursery_low_activity_night-cropped.mp4",
-    "14_nursery_medium_activity_day-cropped.mp4",
-    "15_nursery_medium_activity_night-cropped.mp4"
+    # "12_nursery_low_activity_day-cropped.mp4",
+    # "13_nursery_low_activity_night-cropped.mp4",
+    # "14_nursery_medium_activity_day-cropped.mp4",
+    # "15_nursery_medium_activity_night-cropped.mp4"
 ]
 annotations_paths = [
     "data/tracking/11/pigs_tracking.json",
-    "data/tracking/12/pigs_tracking.json",
-    "data/tracking/13/pigs_tracking.json",
-    "data/tracking/14/pigs_tracking.json",
-    "data/tracking/15/pigs_tracking.json",
+    # "data/tracking/12/pigs_tracking.json",
+    # "data/tracking/13/pigs_tracking.json",
+    # "data/tracking/14/pigs_tracking.json",
+    # "data/tracking/15/pigs_tracking.json",
 ]
 start_times = [6000, 6000, 6000, 6000, 6000]
-num_of_pigs_per_video = [17, 17, 17, 17, 17]
+num_of_pigs_per_video = [16, 17, 17, 17, 17]
 
 detection_obj = DefaultDetectionModel()
 siamese_obj = DefaultSiameseModel(weights_path=weights_dir, base_model=base_model)
