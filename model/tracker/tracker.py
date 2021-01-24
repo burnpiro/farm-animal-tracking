@@ -42,6 +42,9 @@ class Tracker(AbstractTracker):
         for track_id, track in enumerate(self.tracks):
             track.update_with_prev_value()
 
+    def get_track_class(self, track):
+        return track.track_id
+
     @staticmethod
     def boxes_to_xywh(boxes):
         wh = boxes[:, 2:] - boxes[:, :2]

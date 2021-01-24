@@ -11,7 +11,7 @@ from model.siamese.config import cfg
 
 flags.DEFINE_string(
     "weights",
-    "siam-108-0.001-5layer_0.9683.h5",
+    "siam-118-0.0001-1.0a_0.0633.h5",
     "weights name",
 )
 
@@ -23,7 +23,7 @@ flags.DEFINE_string(
 
 WEIGHTS_DIR = "model/siamese/weights"
 
-base_model = list(base_models.keys())[2]  # MobileNetV2
+base_model = list(base_models.keys())[0]  # MobileNetV2
 
 
 def main(_argv):

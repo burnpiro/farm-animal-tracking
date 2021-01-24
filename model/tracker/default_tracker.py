@@ -36,6 +36,9 @@ class DefaultTracker(AbstractTracker):
         for track_id, track in enumerate(self.tracks):
             track.update_with_prev_value()
 
+    def get_track_class(self, track):
+        return track.track_id
+
     def draw_tracked_objects(self, image_np: np.ndarray):
         result = image_np.copy()
         width = result.shape[1]
@@ -51,9 +54,9 @@ class DefaultTracker(AbstractTracker):
                 (0, 255, 0),
                 2,
             )
-            label = str(track.track_id)
+            label = str(self.get_track_class(track))
             if self.labels is not None:
-                label = self.labels[track.track_id]
+                label = self.labels[int(self.get_track_class(track))-1]
             cv2.putText(
                 result,
                 label,

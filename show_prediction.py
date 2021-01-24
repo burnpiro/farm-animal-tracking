@@ -56,7 +56,7 @@ def get_model_detection_function(model):
 
 
 if __name__ == '__main__':
-    pipeline_config = 'model/inference_graph/pipeline.config'
+    pipeline_config = 'model/detection_model/inference_graph/pipeline.config'
     model_dir = 'model/detection_model/inference_graph/checkpoint'
 
     configs = config_util.get_configs_from_pipeline_file(pipeline_config)

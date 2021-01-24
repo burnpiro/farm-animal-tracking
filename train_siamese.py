@@ -17,7 +17,7 @@ WEIGHTS_DIR = "model/siamese/weights"
 
 def main(_argv):
     model = create_model(trainable=TRAINABLE, base_model=base_model)
-    prefix = "5layer"
+    prefix = "block3c_add"
     try:
         tf.keras.utils.plot_model(
             model,
