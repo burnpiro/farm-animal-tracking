@@ -24,9 +24,11 @@ class KalmanTrack(AbstractTrack):
         # self.bbox = self.bbox_to_xywa(bbox)
         self.embedding = embedding
         self.track_id = track_id
-        self.history = [] if bbox is None else [bbox.tolist()]
+        if bbox is None:
+            bbox = np.array([0, 0, 0.1, 0.1])
+        self.history = [bbox.tolist()]
 
-        self.embeddings = deque([embedding], maxlen=10)
+        self.embeddings = deque(maxlen=50) if embedding is None else deque([embedding], maxlen=50)
         self.kf = KalmanFilter(dim_x=8, dim_z=4)
         dt = 1
         # Linear motion kalman model

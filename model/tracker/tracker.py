@@ -77,14 +77,10 @@ class Tracker(AbstractTracker):
     def position_similarity_matrix(self, new_bboxes, max_dist):
         matrix = np.empty((self.paths_num, new_bboxes.shape[0]))
         for i in range(matrix.shape[0]):
-            for j in range(matrix.shape[1]):
-                if len(self.tracks[i].history) == 0:
-                    # track was not initialized
-                    matrix[i, j] = max_dist
-                else:
-                    matrix[i, j] = self.tracks[i].get_position_distance(
-                        new_bboxes[j],
-                    )
+            for j in range(matrix.shape[1]):                
+                matrix[i, j] = self.tracks[i].get_position_distance(
+                    new_bboxes[j],
+                )
         return matrix
 
     def appearance_similarity_matrix(self, new_embeddings, max_dist):
@@ -113,7 +109,7 @@ class Tracker(AbstractTracker):
                     self.track_class(boxes[i], embeddings[i], i + 1) for i in range(boxes.shape[0])
                 ]
                 for i in range(boxes.shape[0], self.paths_num):
-                    self.track_class(track_id=i + 1)
+                    self.tracks.append(self.track_class(track_id=i + 1))
             else:
                 self.tracks = [
                     self.track_class(boxes[i], embeddings[i], i + 1) for i in range(self.paths_num)
