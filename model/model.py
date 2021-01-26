@@ -106,7 +106,7 @@ class Model(AbstractModel):
             try:
                 frames_stacked = np.stack(frames)
             except:
-                print([f.shape for f in frames])
+                # print([f.shape for f in frames])
                 exit()
             boxes = self.detection_model.predict(frames_stacked)
 
@@ -119,7 +119,7 @@ class Model(AbstractModel):
                     print()
                     print()
                     print("There was an error while processing ")
-                    print(frame)
+                    # print(frame)
                     print(f"frame id {i}")
                     print()
                     print()

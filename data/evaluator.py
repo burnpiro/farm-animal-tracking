@@ -86,7 +86,9 @@ class Evaluator:
                 sum_dist = 0.0
                 last_num = 0
                 for frame_id in range(i, i + interval):
-                    if frame_id >= len(mapped_paths_with_offset[object_id]):
+                    if frame_id >= len(
+                        mapped_paths_with_offset[object_id]
+                    ) or video_frame_offset + frame_id >= len(ann_path):
                         break
                     last_num += 1
                     sum_dist += euclidean(
@@ -94,6 +96,8 @@ class Evaluator:
                         mapped_paths_with_offset[object_id][frame_id],
                     )
 
+                if last_num == 0:
+                    continue
                 scores[object_id]["parts"].append(sum_dist / last_num)
         return scores
 
