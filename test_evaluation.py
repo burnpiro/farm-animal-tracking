@@ -70,84 +70,95 @@ base_model = list(base_models.keys())[0]  # MobileNetV2
 
 videos_paths = [
     "11_nursery_high_activity_day-cropped.mp4",
-    # "12_nursery_low_activity_day-cropped.mp4",
-    # "13_nursery_low_activity_night-cropped.mp4",
-    # "14_nursery_medium_activity_day-cropped.mp4",
-    # "15_nursery_medium_activity_night-cropped.mp4"
+    "12_nursery_low_activity_day-cropped.mp4",
+    "13_nursery_low_activity_night-cropped.mp4",
+    "14_nursery_medium_activity_day-cropped.mp4",
+    "15_nursery_medium_activity_night-cropped.mp4"
 ]
 annotations_paths = [
     "data/tracking/11/pigs_tracking.json",
-    # "data/tracking/12/pigs_tracking.json",
-    # "data/tracking/13/pigs_tracking.json",
-    # "data/tracking/14/pigs_tracking.json",
-    # "data/tracking/15/pigs_tracking.json",
+    "data/tracking/12/pigs_tracking.json",
+    "data/tracking/13/pigs_tracking.json",
+    "data/tracking/14/pigs_tracking.json",
+    "data/tracking/15/pigs_tracking.json",
 ]
 start_times = [6000, 6000, 6000, 6000, 6000]
-num_of_pigs_per_video = [16, 17, 17, 17, 17]
+num_of_pigs_per_video = [16, 15, 16, 16, 16]
 
 detection_obj = DefaultDetectionModel()
 siamese_obj = DefaultSiameseModel(weights_path=weights_dir, base_model=base_model)
+trackers = [
+    "DefaultTracker",
+    "AvgEmbeddingTracker"
+    "KalmanTracker"
+]
 
 for idx in range(0, len(videos_paths)):
-    video_path = videos_paths[idx]
-    annotation_path = annotations_paths[idx]
-    offset_val = start_times[idx]
+    for tracker in trackers:
+        selectedTracker = None
+        if tracker == "DefaultTracker":
+            selectedTracker = DefaultTrackerWithPathCorrection(names)
+        if tracker == "AvgEmbeddingTracker":
+            selectedTracker = AvgEmbeddingTracker(names, vectors_path=vectors_dir, meta_path=meta_dir)
+        if tracker == "KalmanTracker":
+            selectedTracker = Tracker(num_of_pigs_per_video[idx])
+        video_path = videos_paths[idx]
+        annotation_path = annotations_paths[idx]
+        offset_val = start_times[idx]
 
-    model = Model(
-        detection_obj,
-        siamese_obj,
-        # DefaultTrackerWithPathCorrection(names),
-        # AvgEmbeddingTracker(names, vectors_path=vectors_dir, meta_path=meta_dir),
-        Tracker(num_of_pigs_per_video[idx]),
-    )
-
-    evaluator = Evaluator(
-        model,
-        videos_paths,
-        annotations_paths,
-    )
-    scores, annotations, paths = evaluator.run_evaluation_for_video(
-        video_path,
-        annotation_path,
-        "tracking_only",
-        video_frame_offset=offset_val,
-        compare_parts=True,
-        compare_part_interval=5,
-        video_out_path=None
-    )
-    scores = extract_scores(scores, paths)
-
-    out_dir = generate_test_dir("MobileNetV2", "KalmanTracker", video_path)
-
-    if not os.path.isdir(out_dir):
-        os.mkdir(out_dir)
-
-    for obj_id, annotation in annotations.items():
-        print_path_comparison(
-            out_dir,
-            annotation[offset_val: offset_val+len(paths[obj_id])],
-            paths[obj_id],
-            obj_id,
-            interval=scores[obj_id]["intervals"]["interval"],
-            parts=scores[obj_id]["intervals"]["parts"],
+        model = Model(
+            detection_obj,
+            siamese_obj,
+            selectedTracker,
         )
 
-    json.dump(
-        annotations,
-        codecs.open(os.path.join(out_dir, "annotations.json"), "w", encoding="utf-8"),
-        sort_keys=False,
-        separators=(",", ":"),
-    )
-    json.dump(
-        paths,
-        codecs.open(os.path.join(out_dir, "out.json"), "w", encoding="utf-8"),
-        sort_keys=False,
-        separators=(",", ":"),
-    )
-    json.dump(
-        scores,
-        codecs.open(os.path.join(out_dir, "scores.json"), "w", encoding="utf-8"),
-        indent=2,
-        sort_keys=False,
-        separators=(",", ":"),
-    )
+        evaluator = Evaluator(
+            model,
+            videos_paths,
+            annotations_paths,
+        )
+        scores, annotations, paths = evaluator.run_evaluation_for_video(
+            video_path,
+            annotation_path,
+            "tracking_only",
+            video_frame_offset=offset_val,
+            compare_parts=True,
+            compare_part_interval=5,
+            video_out_path=None
+        )
+        scores = extract_scores(scores, paths)
+
+        out_dir = generate_test_dir("MobileNetV2", tracker, video_path)
+
+        if not os.path.isdir(out_dir):
+            os.mkdir(out_dir)
+
+        for obj_id, annotation in annotations.items():
+            print_path_comparison(
+                out_dir,
+                annotation[offset_val: offset_val+len(paths[obj_id])],
+                paths[obj_id],
+                obj_id,
+                interval=scores[obj_id]["intervals"]["interval"],
+                parts=scores[obj_id]["intervals"]["parts"],
+            )
+
+        json.dump(
+            annotations,
+            codecs.open(os.path.join(out_dir, "annotations.json"), "w", encoding="utf-8"),
+            sort_keys=False,
+            separators=(",", ":"),
+        )
+        json.dump(
+            paths,
+            codecs.open(os.path.join(out_dir, "out.json"), "w", encoding="utf-8"),
+            sort_keys=False,
+            separators=(",", ":"),
+        )
+        json.dump(
+            scores,
+            codecs.open(os.path.join(out_dir, "scores.json"), "w", encoding="utf-8"),
+            indent=2,
+            sort_keys=False,
+            separators=(",", ":"),
+        )

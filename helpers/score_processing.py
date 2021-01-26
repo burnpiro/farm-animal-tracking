@@ -43,7 +43,7 @@ def extract_scores(scores, paths):
         new_scores[track_id] = {
             "total": {
                 "abs_err": track["total"],
-                "mae": track["total"] / len(paths[track_id]),
+                "avg_err": track["total"] / len(paths[track_id]),
             }
         }
 

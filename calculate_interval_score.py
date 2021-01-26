@@ -18,8 +18,8 @@ for class_id, class_score in scores.items():
     print(class_id)
     print(names[int(class_id)-1], mean_err)
     mapped_scores.append((names[int(class_id)-1], mean_err))
-    full_values.append((names[int(class_id)-1], class_score["total"]["mae"]))
-    scores[class_id]["intervals"]["mae"] = mean_err
+    full_values.append((names[int(class_id)-1], class_score["total"]["avg_err"]))
+    scores[class_id]["intervals"]["avg_err"] = mean_err
 
 print()
 
