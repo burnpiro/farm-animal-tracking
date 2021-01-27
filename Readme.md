@@ -23,7 +23,7 @@ $ pip install -r requirements.txt
 
 ### Download recognition model weights
 
-1. To download precompiled model weights [Google Drive](https://drive.google.com/file/d/19wD8VsuGlIeBKCbfmmVMBxePn8lCoZJm/view?usp=sharing)
+1. To download precompiled model weights [Google Drive](https://drive.google.com/file/d/1-HGENW0g-ZvfeWzfemLMPf1Eg9RFuceW/view?usp=sharing)
 1. Unzip archive to model/siamese/weights
 
 ## Running 
