@@ -2,6 +2,52 @@
 
 Project for tracking farm animals.
 
+## Prerequisites
+* Python >=3.7
+* [TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/archive/research/object_detection)
+
+## Instalation
+Download repository and install dependencies
+
+```bash
+$ git clone https://github.com/burnpiro/farm-animal-tracking.git
+$ cd farm-animal-tracking
+$ pip install -r requirements.txt
+```
+
+### Download detection model weights
+
+1. To download precompiled model weights [Google Drive](https://drive.google.com/file/d/19wD8VsuGlIeBKCbfmmVMBxePn8lCoZJm/view?usp=sharing)
+1. Unzip archive to model/detection_model
+
+
+### Download recognition model weights
+
+1. To download precompiled model weights [Google Drive](https://drive.google.com/file/d/19wD8VsuGlIeBKCbfmmVMBxePn8lCoZJm/view?usp=sharing)
+1. Unzip archive to model/siamese/weights
+
+## Running 
+
+### Detection
+
+To visualize animal detection on video use:
+```
+$ python show_prediction.py
+```
+or for image:
+```
+$ python run_detection.py
+```
+
+![](assets/prediction.png)
+
+### Tracking
+To visualize animal tracking on video use:
+```
+$ python show_tracking.py --video=<path to video>
+```
+
+
 ## Dataset
 
 Dataset for learning of model can be obtained at [PSRG website](http://psrg.unl.edu/Projects/Details/12-Animal-Tracking).
@@ -14,28 +60,6 @@ docker-compose -f eda/docker-compose.yaml up
 ```
 - Go to `localhost:8001` and enter token from console
 
-## Model
-
-1. To download precompiled model weights [Google Drive](https://drive.google.com/file/d/19wD8VsuGlIeBKCbfmmVMBxePn8lCoZJm/view?usp=sharing)
-1. Copy zip file into `./` directory
-1. Run:
-
-```
-$ unzip inference_graph.tar.zip -d model
-```
-
-## Detection
-
-To visualize animal detection on video use:
-```
-$ python show_prediction.py
-```
-or for image:
-```
-$ python run_detection.py
-```
-
-![](assets/prediction.png)
 
 ## Siamese network
 

@@ -9,3 +9,5 @@ pandas
 tqdm
 filterpy
 scipy
+numpy
+matplotlib
