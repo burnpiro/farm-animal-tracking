@@ -16,7 +16,7 @@ from data.siamese_evaluator import SiameseEvaluator
 
 flags.DEFINE_string(
     "weights",
-    "siam-108-0.001-5layer_0.9683.h5",
+    "siam-147-0.001-block3c_add_0.2488.h5",
     "weights name",
 )
 
