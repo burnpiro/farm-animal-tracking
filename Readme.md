@@ -1,6 +1,6 @@
 # Farm Animal Tracking Project
 
-Project for tracking farm animals.
+Project for tracking farm animals.[Sample YT](https://www.youtube.com/watch?v=SEw_Tgrrg_E)
 
 ## Prerequisites
 * Python >=3.7
