@@ -1,13 +1,13 @@
-imageio
-tensorflow
-tensorflow_addons
-tensorflow_datasets
-opencv-python
-pillow
-easydict
-pandas
+imageio == 2.9.0
+tensorflow == 2.3.0
+tensorflow_addons == 0.11.2
+tensorflow_datasets == 4.1.0
+opencv-python == 4.4.0.46
+pillow == 8.0.1
+easydict == 1.9
+pandas == 1.2.3
 tqdm
-filterpy
-scipy
-numpy
-matplotlib
+filterpy == 1.4.5
+scipy == 1.4.1
+numpy == 1.19.5
+matplotlib == 3.2.1
