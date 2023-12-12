@@ -52,6 +52,9 @@ $ python show_tracking.py --video=<path to video>
 
 Dataset for learning of model can be obtained at [PSRG website](http://psrg.unl.edu/Projects/Details/12-Animal-Tracking).
 
+##### Update 2023:
+Dataset is no longer available through the university website. Please contact them directly to access the data as described in [Issue 8](https://github.com/burnpiro/farm-animal-tracking/issues/8)
+
 ## EDA (Exploratory Data Analysis)
 
 - Run:
